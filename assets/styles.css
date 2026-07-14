@@ -2134,12 +2134,91 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
   }
 
   .stage1-kpis {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .stage1-card,
   .stage1-plan-card {
     padding: 22px;
+  }
+}
+
+/* Compact dashboard cards for phone-sized screens. Keep the four KPIs visible
+   as a 2x2 summary while the larger dashboard sections remain single-column. */
+@media (max-width: 760px) {
+  .stage1-page-content {
+    padding: 14px 12px 28px;
+  }
+
+  .stage1-dashboard {
+    gap: 12px;
+  }
+
+  .stage1-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .stage1-kpi {
+    min-width: 0;
+    min-height: 96px;
+    padding: 13px 12px;
+    border-radius: 16px;
+  }
+
+  .stage1-kpi > span {
+    font-size: 13px;
+    line-height: 1.3;
+  }
+
+  .stage1-kpi-value {
+    gap: 3px;
+    margin-top: 8px;
+  }
+
+  .stage1-kpi-value strong {
+    font-size: 24px;
+  }
+
+  .stage1-kpi-value small {
+    overflow: hidden;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .stage1-kpi p {
+    display: none;
+  }
+
+  .stage1-kpi .stage1-meter {
+    margin-top: 8px;
+  }
+
+  .stage1-mockup-grid,
+  .stage1-home-support-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .stage1-mockup-learning,
+  .stage1-mockup-review {
+    min-height: 0;
+  }
+
+  .stage1-card,
+  .stage1-plan-card {
+    padding: 17px 15px;
+    border-radius: 18px;
+  }
+
+  .stage1-card-heading {
+    gap: 10px;
+  }
+
+  .stage1-card-heading h3 {
+    font-size: 1.05rem;
   }
 }
 
