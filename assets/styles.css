@@ -2467,6 +2467,14 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
   grid-template-columns: minmax(0, 1.36fr) minmax(320px, 0.74fr);
 }
 
+.route-concept .content-grid-main > .stack-column {
+  order: 1;
+}
+
+.route-concept .content-grid-main > aside {
+  order: 2;
+}
+
 .section-head {
   display: flex;
   justify-content: space-between;

@@ -1037,9 +1037,9 @@ function renderConcept(data, progress, state) {
                     ${relatedQuestionIds
                       .map(
                         (questionId) => `
-                          <button class="chip-action-button" data-route="quiz" data-question-id="${questionId}" data-subject-id="${selectedSubjectId}">
+                          <span class="tag-chip">
                             ${questionId}
-                          </button>
+                          </span>
                         `
                       )
                       .join("")}
@@ -1079,6 +1079,7 @@ function renderMemorization(data, progress, state) {
   const lessonItemCount = activeItem ? items.filter((item) => item.lessonId === activeItem.lessonId).length : availableItems.length;
   const sessionTotal = session?.itemIds.length || focusedItems.length || lessonItemCount;
   const sessionStep = session ? session.currentIndex + 1 : activeItem?.itemIndex || 1;
+  const canStudyMemorization = currentLesson ? isLessonConceptComplete(progress, currentLesson.id) : false;
 
   if (!activeItem) {
     return layout(
@@ -1089,6 +1090,20 @@ function renderMemorization(data, progress, state) {
           <strong>암기 문항이 없습니다.</strong>
           <p>현재 과목에는 준비된 암기 문항이 없습니다.</p>
         </section>
+      `
+    );
+  }
+
+  if (!canStudyMemorization) {
+    return layout(
+      "암기 학습",
+      "memorization",
+      `
+      <section class="empty-panel">
+        <strong>개념학습을 완료후 학습이 진행됩니다. 완료 버튼을 반드시 눌러주세요.</strong>
+        <p>${currentLesson ? `"${currentLesson.title}" 개념학습 화면에서 완료 버튼을 누른 뒤 암기 학습을 진행할 수 있습니다.` : "먼저 개념학습을 완료해 주세요."}</p>
+        <button class="action-button" data-route="concept" data-subject-id="${selectedSubjectId}" data-lesson-id="${currentLesson?.id || ""}">개념학습으로 이동</button>
+      </section>
       `
     );
   }
@@ -3264,6 +3279,16 @@ export async function handleUiAction(event, state, refresh) {
     const items = getMemorizationItems(lessons);
     const item = items.find((entry) => entry.id === actionButton.dataset.itemId);
     if (!item) {
+      return;
+    }
+    const lesson = lessons.find((entry) => entry.id === item.lessonId);
+    if (!lesson || !isLessonConceptComplete(getProgress(), lesson.id)) {
+      window.alert("개념학습을 완료후 학습이 진행됩니다. 완료 버튼을 반드시 눌러주세요.");
+      state.selectedSubjectId = lesson?.subjectId || state.selectedSubjectId;
+      state.selectedLessonId = lesson?.id || item.lessonId;
+      state.memorizationSession = null;
+      state.memorizationResult = null;
+      navigate("concept");
       return;
     }
 
