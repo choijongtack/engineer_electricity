@@ -1,6 +1,6 @@
 import { getRoute, navigate, onRouteChange } from "./router.js";
 import { handleUiAction, renderApp } from "./ui.js";
-import { getProgress, getStorageKey } from "./storage.js";
+import { getProgress, setProgress } from "./storage.js";
 import { getCloudAuthState, initializeCloudSync, syncProgressAfterLogin } from "./cloudSync.js";
 
 const root = document.querySelector("#app");
@@ -18,13 +18,16 @@ const state = {
   quizResult: null,
   memorizationResult: null,
   mockExamResult: null,
-  authError: null
+  authError: null,
+  authGate: false,
+  authNotice: false
 };
 
 async function refresh() {
   const auth = getCloudAuthState();
   await renderApp(root, getRoute(), state, {
-    requireAuth: auth.configured && !auth.user
+    authRequired: auth.configured && !auth.user,
+    requireAuth: auth.configured && !auth.user && state.authGate
   });
 }
 
@@ -32,7 +35,7 @@ async function init() {
   const cloudUser = await initializeCloudSync();
   if (cloudUser) {
     const syncedProgress = await syncProgressAfterLogin(getProgress());
-    localStorage.setItem(getStorageKey(), JSON.stringify(syncedProgress));
+    setProgress(syncedProgress);
   }
 
   // Firebase Auth가 설정된 배포 환경에서는 인증 후에만 학습 화면을 엽니다.

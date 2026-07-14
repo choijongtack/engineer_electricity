@@ -34,7 +34,8 @@ import {
 } from "./cloudSync.js";
 import {
   getProgress,
-  getStorageKey,
+  setProgress,
+  clearProgress,
   markLessonCompleted,
   markLessonMemorizationPassed,
   markLessonQuestionAnswered,
@@ -834,7 +835,7 @@ function renderHome(data, progress) {
             <div><strong>${planSummary.recommendedNewQuestions}</strong><span>오늘 신규 기출</span></div>
             <div><strong>${planSummary.weeklyLessons}</strong><span>주간 pace</span></div>
           </div>
-          <p class="summary-note">저장 키 <code>${getStorageKey()}</code></p>
+          <p class="summary-note">학습 진행도는 로그인한 Firebase 계정에 저장됩니다.</p>
         </aside>
       </section>
 
@@ -1324,7 +1325,7 @@ function renderSettings(data, progress) {
               <p>로그인한 계정의 학습 기록을 Firebase에 저장합니다.</p>
               <button class="ghost-action-button" data-action="cloud-sign-out">로그아웃</button>
             ` : `
-              <p>${cloud.configured ? "로그인하면 여러 기기에서 학습 기록을 이어갈 수 있습니다." : "Firebase 설정 전에는 기존 localStorage 방식으로 동작합니다."}</p>
+              <p>${cloud.configured ? "로그인하면 여러 기기에서 학습 기록을 이어갈 수 있습니다." : "Firebase 설정이 필요합니다."}</p>
               <div class="form-grid">
                 <label><span>이메일</span><input type="email" data-cloud-email autocomplete="email"></label>
                 <label><span>비밀번호</span><input type="password" data-cloud-password autocomplete="current-password"></label>
@@ -1339,10 +1340,10 @@ function renderSettings(data, progress) {
             <div class="section-head">
               <div>
                 <p class="eyebrow">학습 데이터</p>
-                <h2>브라우저 저장소 관리</h2>
+                <h2>Firebase 학습 기록 관리</h2>
               </div>
             </div>
-            <p>모든 학습 기록은 브라우저 localStorage에 저장됩니다. 초기화하면 진도, 오답, 복습 큐, 북마크, 모의고사 기록이 모두 삭제됩니다.</p>
+            <p>모든 학습 기록은 로그인한 Firebase 계정에 저장됩니다. 초기화하면 진도, 오답, 복습 큐, 북마크, 모의고사 기록이 모두 삭제됩니다.</p>
             <div class="inline-actions">
               <button class="danger-action-button" data-action="reset-progress">학습 기록 초기화</button>
               <button class="ghost-action-button" data-action="reload-app">새로고침</button>
@@ -1381,8 +1382,8 @@ function renderSettings(data, progress) {
         </div>
 
         <aside class="summary-card">
-          <h3>저장 키</h3>
-          <code>${getStorageKey()}</code>
+          <h3>저장 위치</h3>
+          <code>Firestore: users/{사용자UID}/progress/app</code>
         </aside>
       </section>
     `
@@ -1861,9 +1862,48 @@ function renderAuthGate(state) {
             <button class="stitch-secondary-button" type="button" data-action="auth-sign-up">회원가입</button>
           </div>
         </form>
+        <button class="auth-back-button" type="button" data-action="dismiss-auth-gate">학습 화면으로 돌아가기</button>
         <p class="auth-helper">처음 이용하시면 회원가입을 눌러 계정을 만드세요.</p>
       </section>
     </main>
+  `;
+}
+
+const AUTH_REQUIRED_ACTIONS = new Set([
+  "start-due-review",
+  "start-daily-learning",
+  "start-next-daily-learning",
+  "start-next-daily-review",
+  "complete-lesson",
+  "submit-question",
+  "advance-quiz",
+  "toggle-bookmark",
+  "submit-memorization",
+  "advance-memorization",
+  "start-mock-exam",
+  "submit-mock-exam",
+  "review-wrong-answer",
+  "select-study-plan",
+  "reset-progress"
+]);
+
+function markAuthRequiredActions(root) {
+  root.querySelectorAll("[data-action]").forEach((element) => {
+    if (!AUTH_REQUIRED_ACTIONS.has(element.dataset.action)) {
+      return;
+    }
+    element.classList.add("is-auth-locked");
+    element.setAttribute("aria-disabled", "true");
+    element.title = "로그인 후 사용할 수 있습니다.";
+  });
+}
+
+function renderAuthNotice() {
+  return `
+    <div class="auth-notice" role="alert">
+      <span>로그인을 해 주세요.</span>
+      <button type="button" data-action="dismiss-auth-notice" aria-label="로그인 안내 닫기">×</button>
+    </div>
   `;
 }
 
@@ -1890,7 +1930,7 @@ function layout(title, activeRoute, body, meta = "") {
         </nav>
         <div class="stitch-sidebar-footer">
           <button class="stitch-primary-button full-width" data-action="go-home">메인으로 이동</button>
-          <p>학습 기록은 이 브라우저의 localStorage에 저장됩니다.</p>
+          <p>학습 기록은 로그인한 Firebase 계정에 저장됩니다.</p>
         </div>
       </aside>
       <div class="stitch-main">
@@ -2041,7 +2081,7 @@ function renderStitchHome(data, progress) {
                 <h3>${planSummary.label}</h3>
               </div>
             </div>
-            <p class="stitch-card-copy">주간 pace ${planSummary.weeklyLessons}, 추천 신규 ${planSummary.recommendedNewQuestions}, 저장 키 <code>${getStorageKey()}</code></p>
+            <p class="stitch-card-copy">주간 pace ${planSummary.weeklyLessons}, 추천 신규 ${planSummary.recommendedNewQuestions}, 저장 위치 Firebase</p>
           </section>
         </aside>
       </section>
@@ -2062,6 +2102,20 @@ function renderStitchHome(data, progress) {
 }
 
 function renderStageOneLayout(body, hasDueReviews, sidebarAction = {}) {
+  const cloud = getCloudAuthState();
+  const user = cloud.user;
+  const userLabel = user?.displayName?.trim() || user?.email?.split("@")[0] || "회원";
+  const accountControl = user
+    ? `<div class="stage1-account-control">
+        <span class="stage1-account-user" title="${escapeHtml(user.email || "")}">
+          <span class="stage1-account-icon" aria-hidden="true">⌂</span>
+          <span>${escapeHtml(userLabel)} 님</span>
+        </span>
+        <button class="stage1-account-logout" type="button" data-action="cloud-sign-out">로그아웃</button>
+      </div>`
+    : cloud.configured
+      ? `<button class="stage1-account-user is-guest stage1-account-login" type="button" data-action="open-auth-gate"><span class="stage1-account-icon" aria-hidden="true">⌂</span><span>로그인 필요</span></button>`
+      : `<span class="stage1-account-user is-guest"><span class="stage1-account-icon" aria-hidden="true">⌂</span><span>게스트 모드</span></span>`;
   const menuItems = [
     ["home", "\uD559\uC2B5 \uB300\uC2DC\uBCF4\uB4DC", "⌂"],
     ["concept", "\uAC1C\uB150 \uD559\uC2B5", "▣"],
@@ -2095,10 +2149,8 @@ function renderStageOneLayout(body, hasDueReviews, sidebarAction = {}) {
         <header class="stage1-topbar">
           <nav aria-label="\uBCF4\uC870 \uBA54\uB274">
             <button class="is-active" data-route="home">\uD559\uC2B5 \uB300\uC2DC\uBCF4\uB4DC</button>
-            <button data-route="wrong-note">\uC624\uB2F5\uB178\uD2B8</button>
-            <button data-route="mock-exam">\uBAA8\uC758\uACE0\uC0AC</button>
           </nav>
-          <div class="stage1-topbar-tools"><span>\uAC80\uC0C9\uC740 \uC900\uBE44 \uC911</span><button type="button" aria-label="\uC54C\uB9BC">♢</button></div>
+          <div class="stage1-topbar-tools"><span class="stage1-topbar-status">\uAC80\uC0C9\uC740 \uC900\uBE44 \uC911</span><button class="stage1-notification-button" type="button" aria-label="\uC54C\uB9BC">♢</button>${accountControl}</div>
         </header>
         <main class="stage1-page-content">${body}</main>
       </div>
@@ -2192,10 +2244,26 @@ function renderStageOneHome(data, progress) {
   return renderStageOneLayout(`
     <div class="stage1-dashboard">
       <section class="stage1-kpis">
-        <article class="stage1-kpi"><span>개념 완료</span><strong>${stats.completedCount}</strong><small>/ ${data.lessons.length} lessons</small><div class="stage1-meter"><i style="width:${percent(stats.lessonProgress)}"></i></div></article>
-        <article class="stage1-kpi"><span>오늘 복습</span><strong>${stats.dueReviewCount}</strong><small>개 문항</small><p>지금 바로 처리하세요.</p></article>
-        <article class="stage1-kpi"><span>정답률</span><strong>${percent(stats.accuracy)}</strong><small>%</small><p>누적 정답률</p></article>
-        <article class="stage1-kpi is-alert"><span>밀린 복습</span><strong>${stats.overdueReviewCount}</strong><small>개 문항</small><p>우선 처리가 필요합니다.</p></article>
+        <article class="stage1-kpi">
+          <span>개념 완료</span>
+          <div class="stage1-kpi-value"><strong>${stats.completedCount}</strong><small>/ ${data.lessons.length} lessons</small></div>
+          <div class="stage1-meter"><i style="width:${percent(stats.lessonProgress)}"></i></div>
+        </article>
+        <article class="stage1-kpi">
+          <span>오늘 복습</span>
+          <div class="stage1-kpi-value"><strong>${stats.dueReviewCount}</strong><small>개 문항</small></div>
+          <p>지금 바로 처리하세요.</p>
+        </article>
+        <article class="stage1-kpi">
+          <span>정답률</span>
+          <div class="stage1-kpi-value"><strong>${Math.round(stats.accuracy)}</strong><small>%</small></div>
+          <p>누적 정답률</p>
+        </article>
+        <article class="stage1-kpi is-alert">
+          <span>밀린 복습</span>
+          <div class="stage1-kpi-value"><strong>${stats.overdueReviewCount}</strong><small>개 문항</small></div>
+          <p>우선 처리가 필요합니다.</p>
+        </article>
       </section>
 
       <div class="stage1-mockup-grid">
@@ -2743,6 +2811,12 @@ export async function renderApp(root, route, state, options = {}) {
   }
 
   typesetMath(root);
+  if (options.authRequired) {
+    markAuthRequiredActions(root);
+  }
+  if (state.authNotice) {
+    root.insertAdjacentHTML("afterbegin", renderAuthNotice());
+  }
 }
 
 export async function handleUiAction(event, state, refresh) {
@@ -2774,6 +2848,33 @@ export async function handleUiAction(event, state, refresh) {
 
   const { action } = actionButton.dataset;
 
+  if (action === "dismiss-auth-notice") {
+    state.authNotice = false;
+    await refresh();
+    return;
+  }
+
+  if (action === "dismiss-auth-gate") {
+    state.authGate = false;
+    state.authError = null;
+    await refresh();
+    return;
+  }
+
+  if (action === "open-auth-gate") {
+    state.authGate = true;
+    state.authError = null;
+    await refresh();
+    return;
+  }
+
+  const auth = getCloudAuthState();
+  if (auth.configured && !auth.user && AUTH_REQUIRED_ACTIONS.has(action)) {
+    state.authNotice = true;
+    await refresh();
+    return;
+  }
+
   if (["auth-sign-in", "auth-sign-up"].includes(action)) {
     const form = actionButton.closest("[data-auth-form]");
     const email = form?.querySelector("[data-auth-email]")?.value.trim();
@@ -2791,8 +2892,10 @@ export async function handleUiAction(event, state, refresh) {
         await signInWithPassword(email, password);
       }
       state.authError = null;
+      state.authGate = false;
+      state.authNotice = false;
       const syncedProgress = await syncProgressAfterLogin(getProgress());
-      localStorage.setItem(getStorageKey(), JSON.stringify(syncedProgress));
+      setProgress(syncedProgress);
       await refresh();
     } catch (error) {
       state.authError = error.message || "인증에 실패했습니다.";
@@ -2816,8 +2919,10 @@ export async function handleUiAction(event, state, refresh) {
       } else {
         await signInWithPassword(email, password);
       }
+      state.authGate = false;
+      state.authNotice = false;
       const syncedProgress = await syncProgressAfterLogin(getProgress());
-      localStorage.setItem(getStorageKey(), JSON.stringify(syncedProgress));
+      setProgress(syncedProgress);
       await refresh();
     } catch (error) {
       window.alert(`클라우드 로그인에 실패했습니다: ${error.message}`);
@@ -2828,6 +2933,7 @@ export async function handleUiAction(event, state, refresh) {
   if (action === "cloud-sign-out") {
     try {
       await signOutFromCloud();
+      clearProgress();
       await refresh();
     } catch (error) {
       window.alert(`로그아웃에 실패했습니다: ${error.message}`);

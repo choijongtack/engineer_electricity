@@ -113,17 +113,12 @@ export async function loadCloudProgress() {
   return snapshot.data();
 }
 
-export async function syncProgressAfterLogin(localProgress) {
+export async function syncProgressAfterLogin(initialProgress) {
   const remote = await loadCloudProgress();
   if (!remote?.progress) {
-    await syncProgress(localProgress);
-    return localProgress;
+    await syncProgress(initialProgress);
+    return initialProgress;
   }
 
-  const localTime = Date.parse(localProgress.lastAccessAt || 0) || 0;
-  const remoteTime = Date.parse(remote.progress.lastAccessAt || 0) || 0;
-  if (remoteTime > localTime) return remote.progress;
-
-  await syncProgress(localProgress);
-  return localProgress;
+  return remote.progress;
 }

@@ -1,5 +1,6 @@
 import path from "node:path";
 import {
+  dataRoot,
   learningDir,
   loadContentFiles,
   readJson,
@@ -13,23 +14,35 @@ const OUTPUT_PATH = path.join(learningDir, "02_learning_paths.json");
 
 async function main() {
   const contents = sortByLearningOrder(await loadContentFiles(learningDir));
-  const questions = await readJson(path.join(learningDir, "11_questions_past_exam.json"));
+  const questions = await readJson(path.join(dataRoot, "fire_questions.json"));
   const mapItems = await readJson(path.join(learningDir, "12_content_question_map.json"));
   const reportPath = path.join(learningDir, "validation_report.json");
 
-  const questionById = new Map(questions.map((question) => [question.question_id, question]));
+  const questionById = new Map(questions.map((question) => [question.id, question]));
   const contentById = new Map(contents.map((content) => [content.content_id, content]));
   const questionIdsByContentId = new Map();
+  const mappedQuestionIds = new Set();
 
   for (const item of mapItems) {
+    if (!questionById.has(item.question_id) || !contentById.has(item.content_id)) {
+      continue;
+    }
     const current = questionIdsByContentId.get(item.content_id) || [];
     current.push(item.question_id);
     questionIdsByContentId.set(item.content_id, current);
+    mappedQuestionIds.add(item.question_id);
   }
+
+  assignUnmappedQuestions({
+    questions,
+    contents,
+    questionIdsByContentId,
+    mappedQuestionIds
+  });
 
   const orderedBlocks = contents.map((content) => ({
     content,
-    questionIds: unique((questionIdsByContentId.get(content.content_id) || []).filter((id) => questionById.has(id)))
+    questionIds: unique(questionIdsByContentId.get(content.content_id) || [])
   }));
 
   const paths = [
@@ -173,6 +186,52 @@ function assignUnmappedContents(days, orderedBlocks) {
       pushUnique(day.subject_ids, normalizeRouteSubject(block.content.subject));
     }
   });
+}
+
+function assignUnmappedQuestions({ questions, contents, questionIdsByContentId, mappedQuestionIds }) {
+  const contentIdsBySubject = new Map();
+
+  for (const content of contents) {
+    const subjectId = subjectIdForContent(content.content_id);
+    const current = contentIdsBySubject.get(subjectId) || [];
+    current.push(content.content_id);
+    contentIdsBySubject.set(subjectId, current);
+  }
+
+  const nextContentIndexBySubject = new Map();
+  for (const question of questions) {
+    if (mappedQuestionIds.has(question.id)) {
+      continue;
+    }
+
+    const contentIds = contentIdsBySubject.get(question.subjectId) || [];
+    if (contentIds.length === 0) {
+      continue;
+    }
+
+    const nextIndex = nextContentIndexBySubject.get(question.subjectId) || 0;
+    const contentId = contentIds[nextIndex % contentIds.length];
+    const current = questionIdsByContentId.get(contentId) || [];
+    current.push(question.id);
+    questionIdsByContentId.set(contentId, current);
+    nextContentIndexBySubject.set(question.subjectId, nextIndex + 1);
+  }
+}
+
+function subjectIdForContent(contentId) {
+  if (contentId.startsWith("FIRE_")) {
+    return "fire_theory";
+  }
+  if (contentId.startsWith("EC_")) {
+    return "electric_circuit";
+  }
+  if (contentId.startsWith("LAW_")) {
+    return "fire_law";
+  }
+  if (contentId.startsWith("FAC_")) {
+    return "fire_facility_electric";
+  }
+  return null;
 }
 
 function normalizeRouteSubject(subject) {

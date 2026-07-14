@@ -1,5 +1,3 @@
-import { getFirebaseServices } from "./firebaseClient.js";
-
 const cache = {
   subjects: null,
   lessons: null,
@@ -43,23 +41,9 @@ function validateQuestionIds(questions) {
 }
 
 async function loadJson(path) {
-  const filename = path.split("/").pop();
-  let response = null;
-
-  try {
-    const services = await getFirebaseServices();
-    if (services) {
-      const fileRef = services.storageModule.ref(services.storage, `fire/${filename}`);
-      const downloadUrl = await services.storageModule.getDownloadURL(fileRef);
-      response = await fetch(downloadUrl);
-    }
-  } catch (error) {
-    console.warn(`Firebase Storage 콘텐츠를 읽지 못해 로컬 파일을 사용합니다: ${filename}`, error);
-  }
-
-  response ||= await fetch(path);
+  const response = await fetch(path);
   if (!response.ok) {
-    throw new Error(`데이터 로드 실패: ${path}`);
+    throw new Error(`Data load failed: ${path}`);
   }
   return response.json();
 }

@@ -1,7 +1,7 @@
 import { ensureReviewShape, scheduleReview } from "./reviewScheduler.js";
 import { queueProgressSync } from "./cloudSync.js";
 
-const STORAGE_KEY = "fireLearningApp.guestProgress";
+let progressState = null;
 
 function nowIso() {
   return new Date().toISOString();
@@ -96,28 +96,25 @@ function createInitialProgress() {
 }
 
 export function getProgress() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    const initial = createInitialProgress();
-    saveProgress(initial);
-    return initial;
-  }
-
-  try {
-    return ensureProgressShape(JSON.parse(raw));
-  } catch {
-    const reset = createInitialProgress();
-    saveProgress(reset);
-    return reset;
-  }
+  if (!progressState) progressState = createInitialProgress();
+  return ensureProgressShape(progressState);
 }
 
 export function saveProgress(progress) {
   ensureProgressShape(progress);
   progress.lastAccessAt = nowIso();
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  progressState = progress;
   queueProgressSync(progress);
   return progress;
+}
+
+export function setProgress(progress) {
+  progressState = ensureProgressShape(progress);
+  return progressState;
+}
+
+export function clearProgress() {
+  progressState = null;
 }
 
 export function resetProgress() {
@@ -390,8 +387,4 @@ export function resetMemorizationStats(itemIds = []) {
   }
 
   return saveProgress(progress);
-}
-
-export function getStorageKey() {
-  return STORAGE_KEY;
 }

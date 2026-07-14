@@ -1,5 +1,6 @@
 import path from "node:path";
 import {
+  dataRoot,
   fileExists,
   learningDir,
   loadContentFiles,
@@ -11,6 +12,7 @@ async function main() {
   const sourceDir = process.argv[2] ? path.resolve(process.argv[2]) : learningDir;
   const contents = await loadContentFiles(sourceDir);
   const questions = await readJson(path.join(sourceDir, "11_questions_past_exam.json"));
+  const runtimeQuestions = await readJson(path.join(dataRoot, "fire_questions.json"));
   const learningPaths = await readJson(path.join(sourceDir, "02_learning_paths.json"));
   const mapItems = (await fileExists(path.join(sourceDir, "12_content_question_map.json")))
     ? await readJson(path.join(sourceDir, "12_content_question_map.json"))
@@ -48,6 +50,8 @@ async function main() {
 
   const contentIdSet = new Set(contentIds);
   const questionIdSet = new Set(questionIds);
+  const runtimeQuestionIdSet = new Set(runtimeQuestions.map((question) => question.id));
+  const pathQuestionIdSet = new Set([...questionIdSet, ...runtimeQuestionIdSet]);
 
   for (const item of mapItems) {
     if (!contentIdSet.has(item.content_id)) {
@@ -65,7 +69,7 @@ async function main() {
       }
     }
     for (const questionId of pathItem.question_ids || []) {
-      if (!questionIdSet.has(questionId)) {
+      if (!pathQuestionIdSet.has(questionId)) {
         report.errors.push(`missing question for learning path day ${pathItem.day_no}: ${questionId}`);
       }
     }

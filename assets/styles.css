@@ -1024,6 +1024,69 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
   background: var(--panel-strong);
 }
 
+.stage1-account-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px 5px 8px;
+  border: 1px solid rgba(125, 119, 96, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 252, 244, 0.84);
+  box-shadow: 0 8px 18px rgba(74, 67, 47, 0.08);
+}
+
+.stage1-account-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-strong);
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.stage1-account-user.is-guest {
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255, 252, 244, 0.84);
+}
+
+.stage1-account-login {
+  border: 0;
+  cursor: pointer;
+}
+
+.stage1-account-login:hover {
+  color: var(--primary-strong);
+  background: #fff0e6;
+}
+
+.stage1-account-icon {
+  display: inline-grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--secondary);
+  background: #e5f0f2;
+  font-size: 0.75rem;
+}
+
+.stage1-account-logout {
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--primary-strong);
+  background: #fff0e6;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.stage1-account-logout:hover {
+  background: #ffe0cf;
+}
+
 .stage1-page-content {
   width: min(1400px, 100%);
   margin: 0 auto;
@@ -1162,6 +1225,8 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
 }
 
 .stage1-kpi {
+  display: flex;
+  flex-direction: column;
   min-height: 150px;
   padding: 22px;
   border: 1px solid var(--line);
@@ -1170,30 +1235,46 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
   box-shadow: var(--shadow-sm);
 }
 
-.stage1-kpi span,
-.stage1-kpi small,
+.stage1-kpi > span,
 .stage1-kpi p {
   color: var(--muted);
 }
 
-.stage1-kpi span,
-.stage1-kpi small {
-  font-size: 0.82rem;
+.stage1-kpi > span {
+  font-size: 20px;
   font-weight: 600;
 }
 
-.stage1-kpi strong {
-  display: inline-block;
-  margin: 10px 4px 4px 0;
+.stage1-kpi-value {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.stage1-kpi-value strong {
   color: var(--text-strong);
   font-family: "Space Grotesk", sans-serif;
-  font-size: 2.3rem;
+  font-size: 30px;
+  font-weight: 700;
   line-height: 1;
 }
 
+.stage1-kpi-value small {
+  color: var(--muted);
+  font-size: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .stage1-kpi p {
-  margin: 12px 0 0;
-  font-size: 0.78rem;
+  margin: auto 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.stage1-kpi .stage1-meter {
+  margin-top: 14px;
 }
 
 .stage1-kpi.is-alert {
@@ -2029,6 +2110,13 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
   }
 
   .stage1-topbar-tools {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .stage1-topbar-status,
+  .stage1-notification-button {
     display: none;
   }
 
@@ -2838,6 +2926,14 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
   min-height: 126px;
 }
 
+.route-progress .metric-box > span {
+  font-size: 20px;
+}
+
+.route-progress .metric-box > strong {
+  font-size: 30px;
+}
+
 @media (max-width: 1080px) {
   .hero-panel,
   .content-grid-main,
@@ -3015,6 +3111,64 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
   font-size: .9rem;
 }
 
+.auth-back-button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 0;
+  color: var(--muted, #667085);
+  background: transparent;
+  font-size: .8rem;
+  cursor: pointer;
+}
+
+.auth-back-button:hover {
+  color: var(--primary-strong);
+}
+
+.is-auth-locked {
+  opacity: .62;
+  cursor: not-allowed !important;
+}
+
+.auth-notice {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  transform: translateX(-50%);
+  padding: 13px 14px 13px 18px;
+  border: 1px solid rgba(232, 93, 42, 0.28);
+  border-radius: 14px;
+  color: var(--primary-strong);
+  background: #fff7f1;
+  box-shadow: 0 14px 32px rgba(57, 56, 45, 0.16);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.auth-notice button {
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--muted);
+  background: transparent;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.auth-notice button:hover {
+  color: var(--primary-strong);
+  background: #ffe5d7;
+}
+
 @media (max-width: 520px) {
   .auth-card {
     padding: 26px 20px;
@@ -3022,5 +3176,11 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
 
   .auth-actions {
     grid-template-columns: 1fr;
+  }
+
+  .auth-notice {
+    top: 12px;
+    width: calc(100% - 32px);
+    justify-content: space-between;
   }
 }
