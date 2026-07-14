@@ -18,6 +18,7 @@ const state = {
   quizResult: null,
   memorizationResult: null,
   mockExamResult: null,
+  selectedMockExamId: null,
   authError: null,
   authGate: false,
   authNotice: false

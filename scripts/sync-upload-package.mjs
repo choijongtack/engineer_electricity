@@ -216,7 +216,26 @@ function buildAppQuestions(questions) {
       })),
       answer: question.answer,
       explanation: question.explanation,
-      tags: unique([question.chapter, question.topic, question.exam_point, ...(question.tags || [])])
+      tags: unique([question.chapter, question.topic, question.exam_point, ...(question.tags || [])]),
+      images: (question.images || []).map((image) => ({
+        url: image.url || null,
+        alt: image.alt || null,
+        local_path: image.local_path || null,
+        storage_path: image.local_path
+          ? image.local_path.replaceAll("\\", "/").replace(
+              "data/raw/cbtbank/images/",
+              "fire/raw/images/"
+            )
+          : image.storage_path || null
+      })),
+      importMeta: {
+        originalId: question.original_id || question.question_id,
+        originalExam: question.source_date,
+        originalSubject: question.subject,
+        answerText: question.answer_text || null,
+        correctRate: question.correct_rate ?? null,
+        importedFrom: "CBTBank raw"
+      }
     };
   });
 }

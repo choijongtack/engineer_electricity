@@ -69,7 +69,7 @@ async function loadMockExam() {
 }
 
 async function loadLearningPaths() {
-  cache.learningPaths ||= await loadJson("./data/learning/v2-compatible/02_learning_paths.json");
+  cache.learningPaths ||= await loadJson("./data/02_learning_paths.json");
   return cache.learningPaths;
 }
 

@@ -2,7 +2,6 @@ import path from "node:path";
 import {
   dataRoot,
   learningDir,
-  loadContentFiles,
   readJson,
   sortByLearningOrder,
   unique,
@@ -10,27 +9,34 @@ import {
 } from "./data-pipeline-utils.mjs";
 
 const SCHEMA_VERSION = "2.0-compatible-v1";
-const OUTPUT_PATH = path.join(learningDir, "02_learning_paths.json");
+const OUTPUT_PATH = path.join(dataRoot, "02_learning_paths.json");
 
 async function main() {
-  const contents = sortByLearningOrder(await loadContentFiles(learningDir));
+  const runtimeLessons = await readJson(path.join(dataRoot, "fire_lessons.json"));
+  const contents = runtimeLessons.map((lesson, index) => ({
+    ...lesson,
+    content_id: lesson.id,
+    subject: lesson.subjectId,
+    topic: lesson.title,
+    learning_order: index + 1
+  }));
   const questions = await readJson(path.join(dataRoot, "fire_questions.json"));
-  const mapItems = await readJson(path.join(learningDir, "12_content_question_map.json"));
-  const reportPath = path.join(learningDir, "validation_report.json");
 
   const questionById = new Map(questions.map((question) => [question.id, question]));
   const contentById = new Map(contents.map((content) => [content.content_id, content]));
   const questionIdsByContentId = new Map();
   const mappedQuestionIds = new Set();
 
-  for (const item of mapItems) {
-    if (!questionById.has(item.question_id) || !contentById.has(item.content_id)) {
+  for (const content of contents) {
+    for (const questionId of content.relatedQuestionIds || []) {
+      if (!questionById.has(questionId) || !contentById.has(content.content_id)) {
       continue;
     }
-    const current = questionIdsByContentId.get(item.content_id) || [];
-    current.push(item.question_id);
-    questionIdsByContentId.set(item.content_id, current);
-    mappedQuestionIds.add(item.question_id);
+      const current = questionIdsByContentId.get(content.content_id) || [];
+      current.push(questionId);
+      questionIdsByContentId.set(content.content_id, current);
+      mappedQuestionIds.add(questionId);
+    }
   }
 
   assignUnmappedQuestions({
@@ -65,10 +71,6 @@ async function main() {
   ];
 
   await writeJson(OUTPUT_PATH, paths);
-
-  const report = await readJson(reportPath);
-  report.learning_path_count = paths.length;
-  await writeJson(reportPath, report);
 
   console.log(
     JSON.stringify(
@@ -192,7 +194,7 @@ function assignUnmappedQuestions({ questions, contents, questionIdsByContentId, 
   const contentIdsBySubject = new Map();
 
   for (const content of contents) {
-    const subjectId = subjectIdForContent(content.content_id);
+    const subjectId = content.subject;
     const current = contentIdsBySubject.get(subjectId) || [];
     current.push(content.content_id);
     contentIdsBySubject.set(subjectId, current);

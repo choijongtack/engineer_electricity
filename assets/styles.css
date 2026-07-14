@@ -2911,6 +2911,10 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
   border-radius: 28px;
 }
 
+.route-quiz .stitch-page-frame > .stitch-meta-banner {
+  margin-bottom: 24px;
+}
+
 .route-quiz .controls-card {
   padding: 18px 20px;
 }

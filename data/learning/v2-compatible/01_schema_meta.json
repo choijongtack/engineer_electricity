@@ -1,11 +1,11 @@
 {
   "package_id": "FIRE_ELECTRIC_ENGINEER_JSON_V2_CLEAN_SLATE",
   "package_title": "소방설비기사 전기분야 학습앱 V2 호환 학습 데이터",
-  "created_at": "2026-07-08T04:48:15.197Z",
+  "created_at": "2026-07-14T10:33:21.778Z",
   "source_basis": {
     "type": "raw_cbtbank_json",
-    "source_exam_files": 25,
-    "source_questions_total": 2000,
+    "source_exam_files": 1,
+    "source_questions_total": 0,
     "batch_scope": "clean_slate_rebuild"
   },
   "subjects": [

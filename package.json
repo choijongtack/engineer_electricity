@@ -9,6 +9,7 @@
     "data:validate": "node ./scripts/validate-learning-json.mjs",
     "data:seed": "node ./scripts/build-supabase-seed.mjs",
     "data:sync-app": "node ./scripts/sync-upload-package.mjs",
+    "data:rebuild-app": "node ./scripts/rebuild-app-data.mjs",
     "data:generate-fire-questions": "node ./scripts/generate-fire-questions-from-raw.mjs",
     "data:all": "npm run data:build && npm run data:validate && npm run data:seed && npm run data:sync-app",
     "memorization:classify": "node ./scripts/classify-memorization-quality.mjs",

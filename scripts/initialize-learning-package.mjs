@@ -1,4 +1,4 @@
-import { rm } from "node:fs/promises";
+import { readdir, rm } from "node:fs/promises";
 import path from "node:path";
 import {
   appDataDir,
@@ -115,12 +115,35 @@ function parseArgs(argv) {
 }
 
 async function selectExamEntries(options) {
-  const index = await readJson(options.cbtIndexPath);
+  const index = await loadLocalRawIndex(options);
   if (options.examIds.length > 0) {
     const wanted = new Set(options.examIds);
     return index.filter((entry) => wanted.has(entry.exam_id));
   }
   return index.slice(0, options.latestCount);
+}
+
+async function loadLocalRawIndex(options) {
+  if (await fileExists(options.cbtIndexPath)) {
+    return readJson(options.cbtIndexPath);
+  }
+
+  const files = (await readdir(options.processedExamsDir))
+    .filter((fileName) => /^fire_electric_\d{8}\.json$/i.test(fileName))
+    .sort()
+    .reverse();
+
+  if (files.length === 0) {
+    throw new Error(
+      `No raw exam files found in ${options.processedExamsDir}. ` +
+        "Expected fire_electric_YYYYMMDD.json files or data/raw/index.json."
+    );
+  }
+
+  return files.map((fileName) => ({
+    exam_id: fileName.replace(/\.json$/i, ""),
+    file_name: fileName
+  }));
 }
 
 async function resetDirectory(targetPath) {

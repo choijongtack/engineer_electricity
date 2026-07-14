@@ -41,7 +41,6 @@ import {
   markLessonQuestionAnswered,
   markLessonQuizCompleted,
   markSubjectWrongNoteCompleted,
-  resetMemorizationStats,
   advanceCurrentDailyTarget,
   completeCurrentDailyTarget,
   saveDailyStudySession,
@@ -1163,7 +1162,7 @@ function renderMemorization(data, progress, state) {
           <section class="summary-card">
             <h3>현재 규칙</h3>
             <p>${currentLesson ? `${currentLesson.title} lesson의 암기 단계입니다.` : ""}</p>
-            <p class="helper-text">같은 lesson의 모든 암기 문항을 100% 맞혀야 해당 기출 문제로 이동합니다.</p>
+            <p class="helper-text">같은 lesson의 모든 암기 문항을 풀면 정답률과 관계없이 해당 기출 문제로 이동합니다.</p>
           </section>
         </aside>
       </section>
@@ -1201,7 +1200,9 @@ function renderMockExam(data, progress, state) {
   }
 
   const activeExam = getActiveExam();
-  const latestResult = state.mockExamResult || progress.mockExamHistory[0] || null;
+  const mockExams = Array.isArray(data.mockExam) ? data.mockExam : [data.mockExam];
+  const selectedMockExam = mockExams.find((exam) => exam.id === state.selectedMockExamId) || mockExams[0];
+  const latestResult = state.mockExamResult || progress.mockExamHistory.find((result) => result.examId === selectedMockExam?.id) || progress.mockExamHistory[0] || null;
 
   if (!activeExam) {
     return layout(
@@ -1211,9 +1212,17 @@ function renderMockExam(data, progress, state) {
         <section class="content-grid content-grid-main">
           <div class="panel-card">
             <p class="eyebrow">실전 모드</p>
-            <h2>${data.mockExam.title}</h2>
-            <p>문항 수 ${data.mockExam.questionIds.length}개 / 제한 시간 ${data.mockExam.durationMinutes}분</p>
-            <button class="action-button" data-action="start-mock-exam">모의고사 시작</button>
+            <h2>모의고사 set 선택</h2>
+            <div class="stack-column">
+              ${mockExams.map((exam) => {
+                const result = progress.mockExamHistory.find((item) => item.examId === exam.id);
+                return `<button class="lesson-list-item ${exam.id === selectedMockExam?.id ? "is-active" : ""}" data-action="select-mock-exam" data-mock-exam-id="${exam.id}">
+                  <strong>${exam.title}</strong>
+                  <span>${exam.questionIds.length}문항 / ${exam.durationMinutes}분 · ${result ? `최근 ${result.score}점` : "미응시"}</span>
+                </button>`;
+              }).join("")}
+            </div>
+            <button class="action-button" data-action="start-mock-exam" data-mock-exam-id="${selectedMockExam?.id || ""}">${selectedMockExam?.title || "모의고사"} 시작</button>
           </div>
           <aside class="summary-card">
             <h3>최근 결과</h3>
@@ -3319,14 +3328,6 @@ export async function handleUiAction(event, state, refresh) {
 
       state.memorizationSession = null;
       state.selectedMemorizationItemId = null;
-      const passed = session.correctCount === session.itemIds.length;
-
-      if (!passed) {
-        window.alert(`암기 점수가 ${session.correctCount}/${session.itemIds.length}입니다. 같은 lesson 개념으로 돌아갑니다.`);
-        resetMemorizationStats(session.itemIds);
-        navigate("concept");
-        return;
-      }
 
       markLessonMemorizationPassed(item.lessonId);
       const lesson = lessons.find((entry) => entry.id === item.lessonId);
@@ -3396,7 +3397,17 @@ export async function handleUiAction(event, state, refresh) {
 
   if (action === "start-mock-exam") {
     const data = await loadAllData();
-    await startMockExam(data.mockExam);
+    const mockExams = Array.isArray(data.mockExam) ? data.mockExam : [data.mockExam];
+    const selectedMockExam = mockExams.find((exam) => exam.id === actionButton.dataset.mockExamId) || mockExams.find((exam) => exam.id === state.selectedMockExamId) || mockExams[0];
+    state.selectedMockExamId = selectedMockExam?.id || null;
+    await startMockExam(selectedMockExam);
+    state.mockExamResult = null;
+    await refresh();
+    return;
+  }
+
+  if (action === "select-mock-exam") {
+    state.selectedMockExamId = actionButton.dataset.mockExamId || null;
     state.mockExamResult = null;
     await refresh();
     return;

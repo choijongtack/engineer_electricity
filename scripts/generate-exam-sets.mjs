@@ -2,6 +2,7 @@ import path from "node:path";
 import { learningDir, readJson, unique, writeJson } from "./data-pipeline-utils.mjs";
 
 const SCHEMA_VERSION = "2.0-compatible-v1";
+const MOCK_EXAM_SET_COUNT = 10;
 const OUTPUT_PATH = path.join(learningDir, "32_exam_sets.json");
 
 async function main() {
@@ -15,7 +16,12 @@ async function main() {
     byDate.set(question.source_date, current);
   }
 
-  const selectedDates = [...byDate.keys()].sort((left, right) => right.localeCompare(left)).slice(0, 10);
+  const selectedDates = [...byDate.keys()]
+    .sort((left, right) => right.localeCompare(left))
+    .slice(0, MOCK_EXAM_SET_COUNT);
+  if (selectedDates.length < MOCK_EXAM_SET_COUNT) {
+    throw new Error(`모의고사 생성을 위해 최소 ${MOCK_EXAM_SET_COUNT}개 기출 회차가 필요합니다.`);
+  }
   const examSets = selectedDates.map((date, index) => buildExamSet(byDate.get(date) || [], index + 1));
 
   await writeJson(OUTPUT_PATH, examSets);

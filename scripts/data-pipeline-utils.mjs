@@ -8,9 +8,9 @@ export const learningDir = path.join(dataRoot, "learning", "v2-compatible");
 export const seedDir = path.join(dataRoot, "seed", "supabase");
 export const appDataDir = dataRoot;
 export const defaultLearningSourceDir = path.join(projectRoot, "tmp", "zip_apply_batch1");
-export const defaultCbtDataDir = path.resolve(projectRoot, "..", "소방설비전기기사_CBT", "data");
-export const defaultCbtIndexPath = path.join(defaultCbtDataDir, "index.json");
-export const defaultProcessedExamsDir = path.join(defaultCbtDataDir, "processed", "exams");
+export const defaultCbtDataDir = path.join(dataRoot, "raw");
+export const defaultCbtIndexPath = path.join(dataRoot, "raw", "index.json");
+export const defaultProcessedExamsDir = rawCbtbankDir;
 
 export const subjectIdMap = {
   소방원론: "fire_theory",
