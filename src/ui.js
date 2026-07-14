@@ -1835,6 +1835,38 @@ function navItems() {
   ];
 }
 
+function renderAuthGate(state) {
+  const error = state.authError
+    ? `<div class="auth-error" role="alert">${escapeHtml(state.authError)}</div>`
+    : "";
+
+  return `
+    <main class="auth-gate">
+      <section class="auth-card" aria-labelledby="auth-title">
+        <p class="auth-kicker">JT Academy</p>
+        <h1 id="auth-title">학습을 시작하려면 로그인하세요</h1>
+        <p class="auth-description">로그인하면 여러 기기에서 학습 진행도와 오답 기록을 이어갈 수 있습니다.</p>
+        ${error}
+        <form class="auth-form" data-auth-form>
+          <label>
+            <span>이메일</span>
+            <input type="email" data-auth-email autocomplete="email" required placeholder="you@example.com">
+          </label>
+          <label>
+            <span>비밀번호</span>
+            <input type="password" data-auth-password autocomplete="current-password" minlength="6" required placeholder="6자 이상">
+          </label>
+          <div class="auth-actions">
+            <button class="stitch-primary-button" type="button" data-action="auth-sign-in">로그인</button>
+            <button class="stitch-secondary-button" type="button" data-action="auth-sign-up">회원가입</button>
+          </div>
+        </form>
+        <p class="auth-helper">처음 이용하시면 회원가입을 눌러 계정을 만드세요.</p>
+      </section>
+    </main>
+  `;
+}
+
 function layout(title, activeRoute, body, meta = "") {
   return `
     <div class="stitch-shell route-${activeRoute}">
@@ -2673,7 +2705,12 @@ function renderStitchQuiz(data, progress, state) {
   );
 }
 
-export async function renderApp(root, route, state) {
+export async function renderApp(root, route, state, options = {}) {
+  if (options.requireAuth) {
+    root.innerHTML = renderAuthGate(state);
+    return;
+  }
+
   const data = await loadAllData();
   const progress = getProgress();
 
@@ -2736,6 +2773,33 @@ export async function handleUiAction(event, state, refresh) {
   }
 
   const { action } = actionButton.dataset;
+
+  if (["auth-sign-in", "auth-sign-up"].includes(action)) {
+    const form = actionButton.closest("[data-auth-form]");
+    const email = form?.querySelector("[data-auth-email]")?.value.trim();
+    const password = form?.querySelector("[data-auth-password]")?.value;
+    if (!email || !password) {
+      state.authError = "이메일과 비밀번호를 입력하세요.";
+      await refresh();
+      return;
+    }
+
+    try {
+      if (action === "auth-sign-up") {
+        await signUpWithPassword(email, password);
+      } else {
+        await signInWithPassword(email, password);
+      }
+      state.authError = null;
+      const syncedProgress = await syncProgressAfterLogin(getProgress());
+      localStorage.setItem(getStorageKey(), JSON.stringify(syncedProgress));
+      await refresh();
+    } catch (error) {
+      state.authError = error.message || "인증에 실패했습니다.";
+      await refresh();
+    }
+    return;
+  }
 
   if (["cloud-sign-in", "cloud-sign-up"].includes(action)) {
     const panel = actionButton.closest(".panel-card");

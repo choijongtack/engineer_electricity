@@ -1,7 +1,7 @@
 import { getRoute, navigate, onRouteChange } from "./router.js";
 import { handleUiAction, renderApp } from "./ui.js";
 import { getProgress, getStorageKey } from "./storage.js";
-import { initializeCloudSync, syncProgressAfterLogin } from "./cloudSync.js";
+import { getCloudAuthState, initializeCloudSync, syncProgressAfterLogin } from "./cloudSync.js";
 
 const root = document.querySelector("#app");
 
@@ -17,11 +17,15 @@ const state = {
   reviewMode: false,
   quizResult: null,
   memorizationResult: null,
-  mockExamResult: null
+  mockExamResult: null,
+  authError: null
 };
 
 async function refresh() {
-  await renderApp(root, getRoute(), state);
+  const auth = getCloudAuthState();
+  await renderApp(root, getRoute(), state, {
+    requireAuth: auth.configured && !auth.user
+  });
 }
 
 async function init() {
@@ -30,6 +34,9 @@ async function init() {
     const syncedProgress = await syncProgressAfterLogin(getProgress());
     localStorage.setItem(getStorageKey(), JSON.stringify(syncedProgress));
   }
+
+  // Firebase Auth가 설정된 배포 환경에서는 인증 후에만 학습 화면을 엽니다.
+  // Firebase 설정이 없는 로컬 개발 환경은 기존 guest 흐름을 유지합니다.
 
   if (!window.location.hash) {
     navigate("home");
