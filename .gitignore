@@ -1,0 +1,13 @@
+node_modules/
+.playwright-cli/
+.playwright-mcp/
+.vscode/
+.codex/
+.agents/
+backups/
+tmp/
+data/raw/
+*.log
+.env
+.env.*
+!.env.example
