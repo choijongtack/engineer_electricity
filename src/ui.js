@@ -1313,7 +1313,8 @@ function renderSettings(data, progress) {
     `
       <section class="content-grid content-grid-main">
         <div class="stack-column">
-          <section class="panel-card">
+          <!-- cloud sync settings removed -->
+          <section class="panel-card" hidden>
             <div class="section-head">
               <div>
                 <p class="eyebrow">클라우드 동기화</p>
@@ -1340,10 +1341,10 @@ function renderSettings(data, progress) {
             <div class="section-head">
               <div>
                 <p class="eyebrow">학습 데이터</p>
-                <h2>Firebase 학습 기록 관리</h2>
+                <h2>학습 기록 관리</h2>
               </div>
             </div>
-            <p>모든 학습 기록은 로그인한 Firebase 계정에 저장됩니다. 초기화하면 진도, 오답, 복습 큐, 북마크, 모의고사 기록이 모두 삭제됩니다.</p>
+            <p>초기화하면 진도, 오답, 복습 큐, 북마크, 모의고사 기록이 모두 삭제됩니다.</p>
             <div class="inline-actions">
               <button class="danger-action-button" data-action="reset-progress">학습 기록 초기화</button>
               <button class="ghost-action-button" data-action="reload-app">새로고침</button>
