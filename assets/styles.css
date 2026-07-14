@@ -2659,6 +2659,23 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
   line-height: 1.28;
 }
 
+.question-image-gallery {
+  display: grid;
+  gap: 14px;
+  margin: 2px 0 4px;
+}
+
+.question-image {
+  display: block;
+  max-width: 100%;
+  max-height: 520px;
+  margin: 0 auto;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+}
+
 .choice-list {
   display: grid;
   gap: 14px;

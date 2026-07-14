@@ -62,6 +62,31 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;");
 }
 
+function getQuestionImageUrl(image) {
+  const config = window.__FIREBASE_CONFIG__ || {};
+  const storagePath = image?.storage_path;
+  if (storagePath && config.storageBucket) {
+    return `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${encodeURIComponent(storagePath)}?alt=media`;
+  }
+
+  return image?.local_path || image?.url || "";
+}
+
+function renderQuestionImages(question) {
+  const images = Array.isArray(question?.images) ? question.images : [];
+  const markup = images
+    .map((image, index) => {
+      const src = getQuestionImageUrl(image);
+      if (!src) return "";
+
+      const alt = image.alt || `${question.id} 참고 이미지 ${index + 1}`;
+      return `<img class="question-image" src="${src}" alt="${escapeHtml(alt)}" loading="lazy" referrerpolicy="no-referrer">`;
+    })
+    .join("");
+
+  return markup ? `<div class="question-image-gallery">${markup}</div>` : "";
+}
+
 function typesetMath(root) {
   const mathJax = window.MathJax;
   if (!mathJax?.typesetPromise) {
@@ -1232,9 +1257,10 @@ function renderMockExam(data, progress, state) {
             .map(
               (question, index) => `
                 <article class="panel-card question-block">
-                  <p class="eyebrow">${index + 1} / ${activeExam.questions.length}</p>
-                  <h3>${question.question}</h3>
-                  <div class="choice-list">
+                   <p class="eyebrow">${index + 1} / ${activeExam.questions.length}</p>
+                   <h3>${question.question}</h3>
+                   ${renderQuestionImages(question)}
+                   <div class="choice-list">
                     ${question.choices
                       .map(
                         (choice) => `
@@ -2551,9 +2577,10 @@ function renderStitchQuiz(data, progress, state) {
           <article class="stitch-question-card">
             <div class="stitch-question-head">
               <div>
-                <span class="stitch-question-chip">${activeQuestion.source.examDate}</span>
-                <h3>${activeQuestion.question}</h3>
-                <p>${findSubjectName(data.subjects, activeQuestion.subjectId)} · ${activeQuestion.source.questionNumber}번</p>
+                 <span class="stitch-question-chip">${activeQuestion.source.examDate}</span>
+                 <h3>${activeQuestion.question}</h3>
+                 ${renderQuestionImages(activeQuestion)}
+                 <p>${findSubjectName(data.subjects, activeQuestion.subjectId)} · ${activeQuestion.source.questionNumber}번</p>
               </div>
               <button class="stitch-bookmark-button" data-action="toggle-bookmark" data-question-id="${activeQuestion.id}">
                 ${progress.bookmarks.includes(activeQuestion.id) ? "북마크됨" : "북마크"}

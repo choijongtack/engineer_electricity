@@ -8,6 +8,11 @@ service firebase.storage {
       allow write: if false;
     }
 
+    match /fire/raw/images/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // Deny every non-runtime object by default.
     match /{allPaths=**} {
       allow read, write: if false;
