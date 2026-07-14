@@ -2157,11 +2157,24 @@ function renderStageOneLayout(body, hasDueReviews, sidebarAction = {}) {
         </div>
         <nav class="stage1-sidebar-nav" aria-label="\uC8FC \uBA54\uB274">
           ${menuItems.map(([icon, route, label]) => `
-            <button class="stage1-sidebar-item ${route === "home" ? "is-active" : ""}" data-route="${route}">
+            <button class="stage1-sidebar-item ${["mock-exam", "progress", "settings"].includes(route) ? "stage1-mobile-secondary" : ""} ${route === "home" ? "is-active" : ""}" data-route="${route}">
               <span class="stage1-sidebar-icon" aria-hidden="true">${icon}</span><span>${label}</span>
             </button>
           `).join("")}
         </nav>
+        <details class="stage1-mobile-more">
+          <summary>더보기</summary>
+          <div class="stage1-mobile-more-menu">
+            ${menuItems
+              .filter(([, route]) => ["mock-exam", "progress", "settings"].includes(route))
+              .map(([icon, route, label]) => `
+                <button class="stage1-sidebar-item" data-route="${route}">
+                  <span class="stage1-sidebar-icon" aria-hidden="true">${icon}</span><span>${label}</span>
+                </button>
+              `)
+              .join("")}
+          </div>
+        </details>
         <div class="stage1-sidebar-bottom">
           <button class="stage1-primary full-width" ${sidebarAction.action ? `data-action="${sidebarAction.action}"` : ""} ${sidebarAction.disabled ? "disabled" : ""}>${sidebarAction.label || "학습 시작"}</button>
           <p>\uD559\uC2B5 \uAE30\uB85D\uC740 \uC774 \uBE0C\uB77C\uC6B0\uC800\uC5D0 \uC800\uC7A5\uB429\uB2C8\uB2E4.</p>
@@ -2169,10 +2182,16 @@ function renderStageOneLayout(body, hasDueReviews, sidebarAction = {}) {
       </aside>
       <div class="stage1-main">
         <header class="stage1-topbar">
-          <nav aria-label="\uBCF4\uC870 \uBA54\uB274">
-            <button class="is-active" data-route="home">\uD559\uC2B5 \uB300\uC2DC\uBCF4\uB4DC</button>
-          </nav>
-          <div class="stage1-topbar-tools"><span class="stage1-topbar-status">\uAC80\uC0C9\uC740 \uC900\uBE44 \uC911</span><button class="stage1-notification-button" type="button" aria-label="\uC54C\uB9BC">♢</button>${accountControl}</div>
+          <div class="stage1-mobile-brand" aria-label="앱 명칭">
+            <strong>JT Academy</strong>
+            <span>소방설비기사(전기)</span>
+          </div>
+          <div class="stage1-mobile-dashboard-row">
+            <nav aria-label="\uBCF4\uC870 \uBA54\uB274">
+              <button class="is-active" data-route="home">\uD559\uC2B5 \uB300\uC2DC\uBCF4\uB4DC</button>
+            </nav>
+            <div class="stage1-topbar-tools"><span class="stage1-topbar-status">\uAC80\uC0C9\uC740 \uC900\uBE44 \uC911</span><button class="stage1-notification-button" type="button" aria-label="\uC54C\uB9BC">♢</button>${accountControl}</div>
+          </div>
         </header>
         <main class="stage1-page-content">${body}</main>
       </div>
@@ -2605,6 +2624,21 @@ function renderStitchQuiz(data, progress, state) {
   const queueSize = sessionQuestionIds.length || 1;
   const currentQuestionIndex = sessionQuestionIds.indexOf(activeQuestion.id);
   const progressPosition = currentQuestionIndex >= 0 ? currentQuestionIndex + 1 : 1;
+  const dailyTarget = buildStudyPlanSummary(data, progress).dailyTarget;
+  const dailyQuestionIds = sessionMode === "lesson-quiz" ? dailyTarget.questionIds || [] : [];
+  const solvedDailyQuestionIds = dailyQuestionIds.filter((questionId) => progress.solvedQuestions?.[questionId]);
+  const activeDailyQuestionCount = sessionMode === "lesson-quiz" && dailyQuestionIds.includes(activeQuestion.id) && !progress.solvedQuestions?.[activeQuestion.id]
+    ? 1
+    : 0;
+  const displayProgressPosition = sessionMode === "lesson-quiz" && dailyQuestionIds.length
+    ? Math.min(solvedDailyQuestionIds.length + activeDailyQuestionCount, dailyQuestionIds.length)
+    : progressPosition;
+  const displayQueueSize = sessionMode === "lesson-quiz" && dailyQuestionIds.length
+    ? dailyQuestionIds.length
+    : queueSize;
+  const displayProgressLabel = sessionMode === "lesson-quiz" && dailyQuestionIds.length
+    ? "오늘 전체 기출 기준"
+    : sessionLabel;
   const todayReviewCount = sessionMode === "review-queue"
     ? queueSize
     : buildReviewCounts(progress).totalDueCount;
@@ -2647,8 +2681,8 @@ function renderStitchQuiz(data, progress, state) {
       <section class="stitch-kpi-grid">
         <article class="stitch-kpi-card">
           <span>진행률</span>
-          <strong>${progressPosition} / ${queueSize}</strong>
-          <p>${sessionLabel}</p>
+          <strong>${displayProgressPosition} / ${displayQueueSize}</strong>
+          <p>${displayProgressLabel}</p>
         </article>
         <article class="stitch-kpi-card">
           <span>오늘 복습</span>
