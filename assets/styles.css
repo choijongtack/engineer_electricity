@@ -3293,6 +3293,25 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
    dashboard's top area. The nav remains horizontally scrollable for the full
    menu, while each item keeps a comfortable touch target. */
 @media (max-width: 640px) {
+  .stage1-shell {
+    display: block;
+    min-height: 100vh;
+  }
+
+  .stage1-shell .stage1-main {
+    display: block;
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  .stage1-shell .stage1-page-content {
+    display: block;
+    width: 100%;
+    min-height: 1px;
+    visibility: visible;
+    opacity: 1;
+  }
+
   .stage1-shell .stage1-sidebar,
   .stitch-shell .stitch-sidebar {
     position: fixed;
