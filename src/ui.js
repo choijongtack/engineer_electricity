@@ -751,7 +751,6 @@ function stitchLayout(title, activeRoute, body, meta = "") {
           <h1>${title}</h1>
           <p class="header-description">신규 학습과 기출 기반 복습을 분리해 운영하는 소방설비기사 학습 앱입니다.</p>
         </div>
-        <button class="header-home-button" data-action="go-home">대시보드</button>
       </header>
       <nav class="app-nav">
         ${navItems()
@@ -1954,7 +1953,6 @@ function layout(title, activeRoute, body, meta = "") {
             .join("")}
         </nav>
         <div class="stitch-sidebar-footer">
-          <button class="stitch-primary-button full-width" data-action="go-home">메인으로 이동</button>
           <p>학습 기록은 로그인한 Firebase 계정에 저장됩니다.</p>
         </div>
       </aside>
