@@ -3275,3 +3275,97 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
     justify-content: space-between;
   }
 }
+
+/* Shared shell bridge: the dashboard keeps its stage1 content styles while
+   using the same stitch page frame as the other routes. */
+.stage1-shell .stitch-page-frame {
+  min-width: 0;
+  padding: 0;
+}
+
+.stage1-shell .stitch-sidebar-brand,
+.stage1-shell .stitch-sidebar-nav,
+.stage1-shell .stitch-sidebar-footer {
+  min-width: 0;
+}
+
+/* Mobile navigation: keep every route available without consuming the
+   dashboard's top area. The nav remains horizontally scrollable for the full
+   menu, while each item keeps a comfortable touch target. */
+@media (max-width: 640px) {
+  .stage1-shell .stage1-sidebar,
+  .stitch-shell .stitch-sidebar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 30;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    padding: 8px 8px env(safe-area-inset-bottom);
+    border-top: 1px solid var(--line);
+    border-right: 0;
+    border-radius: 18px 18px 0 0;
+    background: rgba(255, 251, 246, 0.96);
+    box-shadow: 0 -10px 24px rgba(62, 48, 34, 0.12);
+    backdrop-filter: blur(16px);
+  }
+
+  .stage1-shell .stage1-brand,
+  .stage1-shell .stitch-sidebar-brand,
+  .stage1-shell .stage1-sidebar-bottom,
+  .stage1-shell .stitch-sidebar-footer,
+  .stitch-shell .stitch-sidebar-brand,
+  .stitch-shell .stitch-sidebar-footer {
+    display: none;
+  }
+
+  .stage1-shell .stage1-sidebar-nav,
+  .stage1-shell .stitch-sidebar-nav,
+  .stitch-shell .stitch-sidebar-nav {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .stage1-shell .stage1-sidebar-nav::-webkit-scrollbar,
+  .stitch-shell .stitch-sidebar-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .stage1-shell .stage1-sidebar-item,
+  .stage1-shell .stitch-nav-item,
+  .stitch-shell .stitch-nav-item {
+    flex: 0 0 76px;
+    width: 76px;
+    min-height: 48px;
+    justify-content: center;
+    gap: 3px;
+    padding: 7px 5px;
+    border-radius: 12px;
+    font-size: 11px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .stage1-shell .stage1-sidebar-icon {
+    font-size: 1rem;
+  }
+
+  .stage1-shell .stage1-main,
+  .stitch-shell .stitch-main {
+    min-width: 0;
+    padding-bottom: 76px;
+  }
+
+  .stage1-shell .stage1-topbar,
+  .stitch-shell .stitch-topbar {
+    min-height: 0;
+    padding: 10px 14px;
+  }
+}

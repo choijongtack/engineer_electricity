@@ -2141,43 +2141,40 @@ function renderStageOneLayout(body, hasDueReviews, sidebarAction = {}) {
     : cloud.configured
       ? `<button class="stage1-account-user is-guest stage1-account-login" type="button" data-action="open-auth-gate"><span class="stage1-account-icon" aria-hidden="true">⌂</span><span>로그인 필요</span></button>`
       : `<span class="stage1-account-user is-guest"><span class="stage1-account-icon" aria-hidden="true">⌂</span><span>게스트 모드</span></span>`;
-  const menuItems = [
-    ["home", "\uD559\uC2B5 \uB300\uC2DC\uBCF4\uB4DC", "⌂"],
-    ["concept", "\uAC1C\uB150 \uD559\uC2B5", "▣"],
-    ["wrong-note", "\uBCF5\uC2B5 \uAD00\uB9AC", "↻"],
-    ["mock-exam", "\uBAA8\uC758\uACE0\uC0AC", "◇"],
-    ["progress", "\uD559\uC2B5 \uD604\uD669", "◒"],
-    ["settings", "\uC124\uC815", "⚙"]
-  ];
+  const menuItems = stitchNavItems().map(([route, label], index) => [
+    ["⌂", "▣", "◇", "↻", "◇", "◒", "⚙"][index] || "•",
+    route,
+    label
+  ]);
 
   return `
-    <div class="stage1-shell">
-      <aside class="stage1-sidebar">
-        <div class="stage1-brand">
+    <div class="stage1-shell stitch-shell route-home">
+      <aside class="stage1-sidebar stitch-sidebar">
+        <div class="stage1-brand stitch-sidebar-brand">
           <p>JT Academy</p>
           <strong>\uC18C\uBC29\uC124\uBE44\uAE30\uC0AC</strong>
           <span>\uC804\uAE30\uBD84\uC57C \uD559\uC2B5 \uC6CC\uD06C\uC2A4\uD398\uC774\uC2A4</span>
         </div>
-        <nav class="stage1-sidebar-nav" aria-label="\uC8FC \uBA54\uB274">
-          ${menuItems.map(([route, label, icon]) => `
-            <button class="stage1-sidebar-item ${route === "home" ? "is-active" : ""}" data-route="${route}">
+        <nav class="stage1-sidebar-nav stitch-sidebar-nav" aria-label="\uC8FC \uBA54\uB274">
+          ${menuItems.map(([icon, route, label]) => `
+            <button class="stage1-sidebar-item stitch-nav-item ${route === "home" ? "is-active" : ""}" data-route="${route}">
               <span class="stage1-sidebar-icon" aria-hidden="true">${icon}</span><span>${label}</span>
             </button>
           `).join("")}
         </nav>
-        <div class="stage1-sidebar-bottom">
+        <div class="stage1-sidebar-bottom stitch-sidebar-footer">
           <button class="stage1-primary full-width" ${sidebarAction.action ? `data-action="${sidebarAction.action}"` : ""} ${sidebarAction.disabled ? "disabled" : ""}>${sidebarAction.label || "학습 시작"}</button>
           <p>\uD559\uC2B5 \uAE30\uB85D\uC740 \uC774 \uBE0C\uB77C\uC6B0\uC800\uC5D0 \uC800\uC7A5\uB429\uB2C8\uB2E4.</p>
         </div>
       </aside>
-      <div class="stage1-main">
-        <header class="stage1-topbar">
+      <div class="stage1-main stitch-main">
+        <header class="stage1-topbar stitch-topbar">
           <nav aria-label="\uBCF4\uC870 \uBA54\uB274">
             <button class="is-active" data-route="home">\uD559\uC2B5 \uB300\uC2DC\uBCF4\uB4DC</button>
           </nav>
-          <div class="stage1-topbar-tools"><span class="stage1-topbar-status">\uAC80\uC0C9\uC740 \uC900\uBE44 \uC911</span><button class="stage1-notification-button" type="button" aria-label="\uC54C\uB9BC">♢</button>${accountControl}</div>
+          <div class="stage1-topbar-tools stitch-topbar-actions"><span class="stage1-topbar-status">\uAC80\uC0C9\uC740 \uC900\uBE44 \uC911</span><button class="stage1-notification-button stitch-icon-button" type="button" aria-label="\uC54C\uB9BC">♢</button>${accountControl}</div>
         </header>
-        <main class="stage1-page-content">${body}</main>
+        <div class="stitch-page-frame"><main class="stage1-page-content">${body}</main></div>
       </div>
     </div>
   `;
