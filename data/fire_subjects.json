@@ -1,0 +1,26 @@
+[
+  {
+    "id": "fire_theory",
+    "name": "소방원론",
+    "order": 1,
+    "description": "화재, 연소, 소화, 위험물, 피난 계획 등 기본 개념을 학습합니다."
+  },
+  {
+    "id": "electric_circuit",
+    "name": "소방전기회로",
+    "order": 2,
+    "description": "전기 기초, 회로, 자동제어, 전자 기초를 학습합니다."
+  },
+  {
+    "id": "fire_law",
+    "name": "소방관계법규",
+    "order": 3,
+    "description": "소방관계법규의 핵심 조문과 적용 기준을 학습합니다."
+  },
+  {
+    "id": "fire_facility_electric",
+    "name": "소방전기시설의 구조 및 원리",
+    "order": 4,
+    "description": "경보, 피난, 비상전원, 전기 소방설비 구조와 원리를 학습합니다."
+  }
+]

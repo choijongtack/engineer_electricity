@@ -1,0 +1,361 @@
+[
+  {
+    "id": "LESSON-FT-001",
+    "subjectId": "fire_theory",
+    "chapterId": "combustion",
+    "title": "연소의 기본 조건",
+    "level": "beginner",
+    "summary": "연소는 가연물, 산소공급원, 점화원, 연쇄반응이 갖추어질 때 지속된다.",
+    "conceptCards": [
+      {
+        "id": "CARD-FT-001-01",
+        "title": "연소의 4요소",
+        "body": "연소의 4요소는 가연물, 산소공급원, 점화원, 연쇄반응이다.",
+        "keywords": [
+          "가연물",
+          "산소공급원",
+          "점화원",
+          "연쇄반응"
+        ]
+      }
+    ],
+    "memorizationItems": [
+      {
+        "id": "MEM-LESSON-FT-001-TOPIC",
+        "type": "short-answer",
+        "prompt": "다음 설명에 해당하는 개념 카드 제목을 쓰세요. 연소의 4요소는 가연물, 산소공급원, 점화원, 연쇄반응이다.",
+        "answer": "연소의 4요소",
+        "acceptableAnswers": [
+          "연소의 4요소"
+        ],
+        "hint": "연소는 가연물, 산소공급원, 점화원, 연쇄반응이 갖추어질 때 지속된다.",
+        "answerLabel": "개념 카드 제목"
+      },
+      {
+        "id": "MEM-LESSON-FT-001-SUMMARY",
+        "type": "short-answer",
+        "prompt": "다음 요약에 해당하는 lesson 제목을 쓰세요. 연소는 가연물, 산소공급원, 점화원, 연쇄반응이 갖추어질 때 지속된다.",
+        "answer": "연소의 기본 조건",
+        "acceptableAnswers": [
+          "연소의 기본 조건"
+        ],
+        "hint": "연소는 가연물, 산소공급원, 점화원, 연쇄반응이 갖추어질 때 지속된다.",
+        "answerLabel": "lesson 제목"
+      },
+      {
+        "id": "MEM-LESSON-FT-001-CHAPTER",
+        "type": "choice",
+        "prompt": "연소의 기본 조건가 속한 단원을 고르세요.",
+        "answer": "1",
+        "acceptableAnswers": [],
+        "hint": "연소는 가연물, 산소공급원, 점화원, 연쇄반응이 갖추어질 때 지속된다.",
+        "choices": [
+          {
+            "value": "1",
+            "label": "combustion"
+          }
+        ],
+        "answerLabel": "단원"
+      },
+      {
+        "id": "MEM-LESSON-FT-001-TRAP",
+        "type": "ox",
+        "prompt": "다음 진술이 맞으면 O, 틀리면 X를 고르세요. 연소의 기본 조건에 대한 설명으로 옮다.",
+        "answer": "X",
+        "acceptableAnswers": [
+          "X",
+          "x"
+        ],
+        "hint": "암기 포인트를 다시 확인하세요. 연소는 가연물, 산소공급원, 점화원, 연쇄반응이 갖추어질 때 지속된다.",
+        "answerLabel": "O 또는 X"
+      },
+      {
+        "id": "MEM-LESSON-FT-001-POINT",
+        "type": "choice",
+        "prompt": "연소의 기본 조건의 핵심 암기 포인트를 고르세요.",
+        "answer": "1",
+        "acceptableAnswers": [],
+        "hint": "연소는 가연물, 산소공급원, 점화원, 연쇄반응이 갖추어질 때 지속된다.",
+        "choices": [
+          {
+            "value": "1",
+            "label": "연소는 가연물, 산소공급원, 점화원, 연쇄반응이 갖추어질 때 지속된다."
+          }
+        ],
+        "answerLabel": "핵심 암기 포인트"
+      }
+    ],
+    "relatedQuestionIds": [
+      "Q-20200926-001"
+    ]
+  },
+  {
+    "id": "LESSON-EC-001",
+    "subjectId": "electric_circuit",
+    "chapterId": "ohm-law",
+    "title": "옴의 법칙 기초",
+    "level": "beginner",
+    "summary": "전압, 전류, 저항의 관계를 식으로 표현하는 것이 옴의 법칙이다.",
+    "conceptCards": [
+      {
+        "id": "CARD-EC-001-01",
+        "title": "기본 식",
+        "body": "옴의 법칙은 V = I x R로 표현한다.",
+        "keywords": [
+          "전압",
+          "전류",
+          "저항",
+          "옴의 법칙"
+        ]
+      }
+    ],
+    "memorizationItems": [
+      {
+        "id": "MEM-LESSON-EC-001-TOPIC",
+        "type": "short-answer",
+        "prompt": "다음 설명에 해당하는 개념 카드 제목을 쓰세요. 옴의 법칙은 V = I x R로 표현한다.",
+        "answer": "기본 식",
+        "acceptableAnswers": [
+          "기본 식"
+        ],
+        "hint": "전압, 전류, 저항의 관계를 식으로 표현하는 것이 옴의 법칙이다.",
+        "answerLabel": "개념 카드 제목"
+      },
+      {
+        "id": "MEM-LESSON-EC-001-SUMMARY",
+        "type": "short-answer",
+        "prompt": "다음 요약에 해당하는 lesson 제목을 쓰세요. 전압, 전류, 저항의 관계를 식으로 표현하는 것이 옴의 법칙이다.",
+        "answer": "옴의 법칙 기초",
+        "acceptableAnswers": [
+          "옴의 법칙 기초"
+        ],
+        "hint": "전압, 전류, 저항의 관계를 식으로 표현하는 것이 옴의 법칙이다.",
+        "answerLabel": "lesson 제목"
+      },
+      {
+        "id": "MEM-LESSON-EC-001-CHAPTER",
+        "type": "choice",
+        "prompt": "옴의 법칙 기초가 속한 단원을 고르세요.",
+        "answer": "1",
+        "acceptableAnswers": [],
+        "hint": "전압, 전류, 저항의 관계를 식으로 표현하는 것이 옴의 법칙이다.",
+        "choices": [
+          {
+            "value": "1",
+            "label": "ohm-law"
+          }
+        ],
+        "answerLabel": "단원"
+      },
+      {
+        "id": "MEM-LESSON-EC-001-TRAP",
+        "type": "ox",
+        "prompt": "다음 진술이 맞으면 O, 틀리면 X를 고르세요. 옴의 법칙 기초에 대한 설명으로 옮다.",
+        "answer": "X",
+        "acceptableAnswers": [
+          "X",
+          "x"
+        ],
+        "hint": "암기 포인트를 다시 확인하세요. 전압, 전류, 저항의 관계를 식으로 표현하는 것이 옴의 법칙이다.",
+        "answerLabel": "O 또는 X"
+      },
+      {
+        "id": "MEM-LESSON-EC-001-POINT",
+        "type": "choice",
+        "prompt": "옴의 법칙 기초의 핵심 암기 포인트를 고르세요.",
+        "answer": "1",
+        "acceptableAnswers": [],
+        "hint": "전압, 전류, 저항의 관계를 식으로 표현하는 것이 옴의 법칙이다.",
+        "choices": [
+          {
+            "value": "1",
+            "label": "전압, 전류, 저항의 관계를 식으로 표현하는 것이 옴의 법칙이다."
+          }
+        ],
+        "answerLabel": "핵심 암기 포인트"
+      }
+    ],
+    "relatedQuestionIds": [
+      "Q-20220424-012"
+    ]
+  },
+  {
+    "id": "LESSON-FL-001",
+    "subjectId": "fire_law",
+    "chapterId": "inspection",
+    "title": "소방시설 점검 구분",
+    "level": "beginner",
+    "summary": "소방시설은 자체점검 제도에 따라 작동점검과 종합정밀점검 등으로 관리된다.",
+    "conceptCards": [
+      {
+        "id": "CARD-FL-001-01",
+        "title": "자체점검",
+        "body": "자체점검은 작동점검과 종합정밀점검으로 구분한다.",
+        "keywords": [
+          "자체점검",
+          "작동점검",
+          "종합정밀점검"
+        ]
+      }
+    ],
+    "memorizationItems": [
+      {
+        "id": "MEM-LESSON-FL-001-TOPIC",
+        "type": "short-answer",
+        "prompt": "다음 설명에 해당하는 개념 카드 제목을 쓰세요. 자체점검은 작동점검과 종합정밀점검으로 구분한다.",
+        "answer": "자체점검",
+        "acceptableAnswers": [
+          "자체점검"
+        ],
+        "hint": "소방시설은 자체점검 제도에 따라 작동점검과 종합정밀점검 등으로 관리된다.",
+        "answerLabel": "개념 카드 제목"
+      },
+      {
+        "id": "MEM-LESSON-FL-001-SUMMARY",
+        "type": "short-answer",
+        "prompt": "다음 요약에 해당하는 lesson 제목을 쓰세요. 소방시설은 자체점검 제도에 따라 작동점검과 종합정밀점검 등으로 관리된다.",
+        "answer": "소방시설 점검 구분",
+        "acceptableAnswers": [
+          "소방시설 점검 구분"
+        ],
+        "hint": "소방시설은 자체점검 제도에 따라 작동점검과 종합정밀점검 등으로 관리된다.",
+        "answerLabel": "lesson 제목"
+      },
+      {
+        "id": "MEM-LESSON-FL-001-CHAPTER",
+        "type": "choice",
+        "prompt": "소방시설 점검 구분가 속한 단원을 고르세요.",
+        "answer": "1",
+        "acceptableAnswers": [],
+        "hint": "소방시설은 자체점검 제도에 따라 작동점검과 종합정밀점검 등으로 관리된다.",
+        "choices": [
+          {
+            "value": "1",
+            "label": "inspection"
+          }
+        ],
+        "answerLabel": "단원"
+      },
+      {
+        "id": "MEM-LESSON-FL-001-TRAP",
+        "type": "ox",
+        "prompt": "다음 진술이 맞으면 O, 틀리면 X를 고르세요. 소방시설 점검 구분에 대한 설명으로 옮다.",
+        "answer": "X",
+        "acceptableAnswers": [
+          "X",
+          "x"
+        ],
+        "hint": "암기 포인트를 다시 확인하세요. 소방시설은 자체점검 제도에 따라 작동점검과 종합정밀점검 등으로 관리된다.",
+        "answerLabel": "O 또는 X"
+      },
+      {
+        "id": "MEM-LESSON-FL-001-POINT",
+        "type": "choice",
+        "prompt": "소방시설 점검 구분의 핵심 암기 포인트를 고르세요.",
+        "answer": "1",
+        "acceptableAnswers": [],
+        "hint": "소방시설은 자체점검 제도에 따라 작동점검과 종합정밀점검 등으로 관리된다.",
+        "choices": [
+          {
+            "value": "1",
+            "label": "소방시설은 자체점검 제도에 따라 작동점검과 종합정밀점검 등으로 관리된다."
+          }
+        ],
+        "answerLabel": "핵심 암기 포인트"
+      }
+    ],
+    "relatedQuestionIds": [
+      "Q-20211106-021"
+    ]
+  },
+  {
+    "id": "LESSON-FF-001",
+    "subjectId": "fire_facility_electric",
+    "chapterId": "detector",
+    "title": "자동화재탐지설비 구성",
+    "level": "beginner",
+    "summary": "자동화재탐지설비는 감지기, 수신기, 발신기 등으로 구성된다.",
+    "conceptCards": [
+      {
+        "id": "CARD-FF-001-01",
+        "title": "핵심 구성요소",
+        "body": "자동화재탐지설비의 핵심 장치는 감지기와 수신기이다.",
+        "keywords": [
+          "감지기",
+          "수신기",
+          "발신기",
+          "경계구역"
+        ]
+      }
+    ],
+    "memorizationItems": [
+      {
+        "id": "MEM-LESSON-FF-001-TOPIC",
+        "type": "short-answer",
+        "prompt": "다음 설명에 해당하는 개념 카드 제목을 쓰세요. 자동화재탐지설비의 핵심 장치는 감지기와 수신기이다.",
+        "answer": "핵심 구성요소",
+        "acceptableAnswers": [
+          "핵심 구성요소"
+        ],
+        "hint": "자동화재탐지설비는 감지기, 수신기, 발신기 등으로 구성된다.",
+        "answerLabel": "개념 카드 제목"
+      },
+      {
+        "id": "MEM-LESSON-FF-001-SUMMARY",
+        "type": "short-answer",
+        "prompt": "다음 요약에 해당하는 lesson 제목을 쓰세요. 자동화재탐지설비는 감지기, 수신기, 발신기 등으로 구성된다.",
+        "answer": "자동화재탐지설비 구성",
+        "acceptableAnswers": [
+          "자동화재탐지설비 구성"
+        ],
+        "hint": "자동화재탐지설비는 감지기, 수신기, 발신기 등으로 구성된다.",
+        "answerLabel": "lesson 제목"
+      },
+      {
+        "id": "MEM-LESSON-FF-001-CHAPTER",
+        "type": "choice",
+        "prompt": "자동화재탐지설비 구성가 속한 단원을 고르세요.",
+        "answer": "1",
+        "acceptableAnswers": [],
+        "hint": "자동화재탐지설비는 감지기, 수신기, 발신기 등으로 구성된다.",
+        "choices": [
+          {
+            "value": "1",
+            "label": "detector"
+          }
+        ],
+        "answerLabel": "단원"
+      },
+      {
+        "id": "MEM-LESSON-FF-001-TRAP",
+        "type": "ox",
+        "prompt": "다음 진술이 맞으면 O, 틀리면 X를 고르세요. 자동화재탐지설비 구성에 대한 설명으로 옮다.",
+        "answer": "X",
+        "acceptableAnswers": [
+          "X",
+          "x"
+        ],
+        "hint": "암기 포인트를 다시 확인하세요. 자동화재탐지설비는 감지기, 수신기, 발신기 등으로 구성된다.",
+        "answerLabel": "O 또는 X"
+      },
+      {
+        "id": "MEM-LESSON-FF-001-POINT",
+        "type": "choice",
+        "prompt": "자동화재탐지설비 구성의 핵심 암기 포인트를 고르세요.",
+        "answer": "1",
+        "acceptableAnswers": [],
+        "hint": "자동화재탐지설비는 감지기, 수신기, 발신기 등으로 구성된다.",
+        "choices": [
+          {
+            "value": "1",
+            "label": "자동화재탐지설비는 감지기, 수신기, 발신기 등으로 구성된다."
+          }
+        ],
+        "answerLabel": "핵심 암기 포인트"
+      }
+    ],
+    "relatedQuestionIds": [
+      "Q-20220305-031"
+    ]
+  }
+]

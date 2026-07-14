@@ -1,0 +1,112 @@
+[
+  {
+    "id": "Q-20200926-001",
+    "source": {
+      "examDate": "2020-09-26",
+      "examName": "소방설비기사 전기분야 필기",
+      "questionNumber": 1
+    },
+    "subjectId": "fire_theory",
+    "chapterId": "evacuation",
+    "type": "multiple_choice",
+    "difficulty": "normal",
+    "question": "피난 시 하나의 수단이 고장 등으로 사용이 불가능하더라도 다른 수단 및 방법을 통해서 피난할 수 있도록 하는 것으로 2방향 이상의 피난통로를 확보하는 피난대책의 일반 원칙은?",
+    "choices": [
+      { "number": 1, "text": "Risk-down 원칙" },
+      { "number": 2, "text": "Feed-back 원칙" },
+      { "number": 3, "text": "Fool-proof 원칙" },
+      { "number": 4, "text": "Fail-safe 원칙" }
+    ],
+    "answer": 4,
+    "explanation": "Fail-safe 원칙은 하나의 피난수단이 고장나거나 사용할 수 없더라도 다른 수단으로 안전을 확보하는 개념이다.",
+    "tags": ["피난", "Fail-safe", "소방원론"]
+  },
+  {
+    "id": "Q-20210515-005",
+    "source": {
+      "examDate": "2021-05-15",
+      "examName": "소방설비기사 전기분야 필기",
+      "questionNumber": 5
+    },
+    "subjectId": "fire_theory",
+    "chapterId": "extinguishing_agent",
+    "type": "multiple_choice",
+    "difficulty": "easy",
+    "question": "분말소화약제 중 A급, B급, C급 화재에 모두 사용할 수 있는 것은?",
+    "choices": [
+      { "number": 1, "text": "제1종 분말" },
+      { "number": 2, "text": "제2종 분말" },
+      { "number": 3, "text": "제3종 분말" },
+      { "number": 4, "text": "제4종 분말" }
+    ],
+    "answer": 3,
+    "explanation": "제3종 분말소화약제는 주성분이 제1인산암모늄이며 A급, B급, C급 화재에 모두 적응성이 있다.",
+    "tags": ["분말소화약제", "ABC급", "제3종 분말"]
+  },
+  {
+    "id": "Q-20220424-012",
+    "source": {
+      "examDate": "2022-04-24",
+      "examName": "소방설비기사 전기분야 필기",
+      "questionNumber": 12
+    },
+    "subjectId": "electric_circuit",
+    "chapterId": "ohm-law",
+    "type": "multiple_choice",
+    "difficulty": "easy",
+    "question": "옴의 법칙을 나타낸 식으로 옳은 것은?",
+    "choices": [
+      { "number": 1, "text": "R = V x I" },
+      { "number": 2, "text": "V = I x R" },
+      { "number": 3, "text": "I = V x R" },
+      { "number": 4, "text": "P = V / I" }
+    ],
+    "answer": 2,
+    "explanation": "전압은 전류와 저항의 곱으로 표현한다.",
+    "tags": ["옴의 법칙", "전압", "전류", "저항"]
+  },
+  {
+    "id": "Q-20211106-021",
+    "source": {
+      "examDate": "2021-11-06",
+      "examName": "소방설비기사 전기분야 필기",
+      "questionNumber": 21
+    },
+    "subjectId": "fire_law",
+    "chapterId": "inspection",
+    "type": "multiple_choice",
+    "difficulty": "normal",
+    "question": "소방시설 자체점검의 종류로 옳은 것은?",
+    "choices": [
+      { "number": 1, "text": "육안점검, 정기점검" },
+      { "number": 2, "text": "작동점검, 종합정밀점검" },
+      { "number": 3, "text": "안전점검, 기능점검" },
+      { "number": 4, "text": "자율점검, 외주점검" }
+    ],
+    "answer": 2,
+    "explanation": "소방시설 자체점검은 작동점검과 종합정밀점검으로 구분한다.",
+    "tags": ["소방관계법규", "자체점검"]
+  },
+  {
+    "id": "Q-20220305-031",
+    "source": {
+      "examDate": "2022-03-05",
+      "examName": "소방설비기사 전기분야 필기",
+      "questionNumber": 31
+    },
+    "subjectId": "fire_facility_electric",
+    "chapterId": "detector",
+    "type": "multiple_choice",
+    "difficulty": "normal",
+    "question": "자동화재탐지설비에서 화재신호를 수신하여 경보를 제어하는 장치는?",
+    "choices": [
+      { "number": 1, "text": "감지기" },
+      { "number": 2, "text": "발신기" },
+      { "number": 3, "text": "수신기" },
+      { "number": 4, "text": "중계기" }
+    ],
+    "answer": 3,
+    "explanation": "수신기는 감지기나 발신기로부터 신호를 받아 경보를 표시하고 제어한다.",
+    "tags": ["자동화재탐지설비", "수신기"]
+  }
+]

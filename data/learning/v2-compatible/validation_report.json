@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-07-08T04:48:15.377Z",
+  "status": "WARN",
+  "selected_exam_count": 25,
+  "selected_question_count": 2000,
+  "content_count": 100,
+  "content_question_map_count": 2000,
+  "learning_path_count": 90,
+  "memory_cards_count": 100,
+  "blank_quizzes_count": 100,
+  "exam_sets_count": 10,
+  "pending_steps": [
+    "contents generation",
+    "content-question mapping generation",
+    "memory card generation",
+    "blank quiz generation",
+    "learning path generation",
+    "exam set generation"
+  ]
+}

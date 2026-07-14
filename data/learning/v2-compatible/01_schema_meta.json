@@ -1,0 +1,88 @@
+{
+  "package_id": "FIRE_ELECTRIC_ENGINEER_JSON_V2_CLEAN_SLATE",
+  "package_title": "소방설비기사 전기분야 학습앱 V2 호환 학습 데이터",
+  "created_at": "2026-07-08T04:48:15.197Z",
+  "source_basis": {
+    "type": "raw_cbtbank_json",
+    "source_exam_files": 25,
+    "source_questions_total": 2000,
+    "batch_scope": "clean_slate_rebuild"
+  },
+  "subjects": [
+    {
+      "code": "FIRE_THEORY",
+      "name": "소방원론"
+    },
+    {
+      "code": "ELECTRIC_CIRCUIT",
+      "name": "소방전기회로"
+    },
+    {
+      "code": "FIRE_LAW",
+      "name": "소방관계법규"
+    },
+    {
+      "code": "ELECTRIC_FACILITY",
+      "name": "소방전기시설의 구조 및 원리"
+    }
+  ],
+  "content_schema": {
+    "required": [
+      "content_id",
+      "subject",
+      "chapter",
+      "topic",
+      "level",
+      "learning_order",
+      "title",
+      "learning_goal",
+      "concept_core",
+      "concept_easy",
+      "memory_point",
+      "summary",
+      "status"
+    ],
+    "levels": [
+      "beginner",
+      "basic",
+      "intermediate"
+    ],
+    "status_values": [
+      "draft",
+      "reviewed",
+      "published"
+    ]
+  },
+  "question_schema": {
+    "required": [
+      "question_id",
+      "source_type",
+      "source_date",
+      "source_question_no",
+      "subject",
+      "chapter",
+      "topic",
+      "question_type",
+      "question_text",
+      "choices",
+      "answer",
+      "explanation",
+      "status"
+    ],
+    "question_types": [
+      "multiple_choice",
+      "blank",
+      "true_false"
+    ],
+    "status_values": [
+      "draft",
+      "reviewed",
+      "published"
+    ]
+  },
+  "schema_version": "2.0-compatible-v1",
+  "notes": [
+    "This package was reset from raw exam JSON only.",
+    "Learning contents, mappings, memory cards, blank quizzes, and exam sets must be recreated sequentially."
+  ]
+}

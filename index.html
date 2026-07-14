@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <meta name="description" content="JT Academy 소방설비기사 학습 앱">
+    <title>JT Academy 학습 앱</title>
+    <script>
+      // Firebase Web App 설정입니다. 이 값들은 브라우저 공개 설정입니다.
+      // Firebase Admin SDK service account key는 절대로 넣지 않습니다.
+      window.__FIREBASE_CONFIG__ = {
+        apiKey: "AIzaSyBW79pUbK4NX--AWn6TeTFka9kEPCMRtqc",
+        authDomain: "elec-study-for-pdf.firebaseapp.com",
+        projectId: "elec-study-for-pdf",
+        storageBucket: "elec-study-for-pdf.firebasestorage.app",
+        messagingSenderId: "1041877105420",
+        appId: "1:1041877105420:web:4b16f2402e290fbb84a729"
+      };
+      window.MathJax = {
+        tex: {
+          inlineMath: [["$", "$"], ["\\(", "\\)"]],
+          displayMath: [["$$", "$$"], ["\\[", "\\]"]]
+        },
+        svg: { fontCache: "global" },
+        startup: { typeset: false }
+      };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <link rel="stylesheet" href="./assets/styles.css">
+  </head>
+  <body>
+    <noscript>이 앱은 JavaScript가 필요합니다.</noscript>
+    <div id="app"></div>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
