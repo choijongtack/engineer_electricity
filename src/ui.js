@@ -897,6 +897,9 @@ function renderHome(data, progress) {
             <h2>전체 학습 현황</h2>
           </div>
         </div>
+      </section>
+
+      <section class="panel-card">
         ${subjectProgressRows(data, progress)}
       </section>
     `
@@ -1765,6 +1768,9 @@ function renderProgress(data, progress) {
           </div>
         </div>
         <p>${currentSubject ? "현재 과목의 신규 lesson과 오늘 due 된 기출 복습을 병행 중입니다." : "현재는 모의고사와 누적 복습 중심 단계입니다."}</p>
+      </section>
+
+      <section class="panel-card">
         ${subjectProgressRows(data, progress)}
       </section>
 
