@@ -742,13 +742,16 @@ function stitchNavItems() {
   ];
 }
 
-function stitchLayout(title, activeRoute, body, meta = "") {
+function stitchLayout(title, activeRoute, body, meta = "", headerAction = "") {
   return `
     <div class="app-shell route-${activeRoute}">
       <header class="app-header">
         <div class="header-copy">
           <p class="eyebrow">JT Academy</p>
-          <h1>${title}</h1>
+          <div class="app-title-row">
+            <h1>${title}</h1>
+            ${headerAction}
+          </div>
           <p class="header-description">신규 학습과 기출 기반 복습을 분리해 운영하는 소방설비기사 학습 앱입니다.</p>
         </div>
       </header>
@@ -2667,7 +2670,7 @@ function renderStitchQuiz(data, progress, state) {
     "문제 풀이",
     "quiz",
     `
-      <section class="stitch-kpi-grid">
+      <section id="quiz-status-panel" class="stitch-kpi-grid quiz-status-panel ${state.showQuizStatus ? "" : "is-collapsed"}">
         <article class="stitch-kpi-card">
           <span>진행률</span>
           <strong>${displayProgressPosition} / ${displayQueueSize}</strong>
@@ -2738,11 +2741,11 @@ function renderStitchQuiz(data, progress, state) {
             }
 
             <div class="stitch-question-actions">
-              <button class="stitch-primary-button" data-action="submit-question" data-question-id="${activeQuestion.id}">채점하기</button>
+              <button class="${result ? "stitch-secondary-button" : "stitch-primary-button"}" data-action="submit-question" data-question-id="${activeQuestion.id}">채점하기</button>
               ${
                 result && state.quizSession
-                  ? `<button class="stitch-secondary-button" data-action="advance-quiz" data-question-id="${activeQuestion.id}">${getQuizAdvanceLabel(state)}</button>`
-                  : `<button class="stitch-secondary-button" data-route="${sessionMode === "wrong-note" || sessionMode === "review-queue" ? "wrong-note" : "home"}">목록으로</button>`
+                  ? `<button class="stitch-primary-button" data-action="advance-quiz" data-question-id="${activeQuestion.id}">${getQuizAdvanceLabel(state)}</button>`
+                  : `<button class="${result ? "stitch-primary-button" : "stitch-secondary-button"}" data-route="${sessionMode === "wrong-note" || sessionMode === "review-queue" ? "wrong-note" : "home"}">목록으로</button>`
               }
             </div>
           </article>
@@ -2797,7 +2800,14 @@ function renderStitchQuiz(data, progress, state) {
         ? "채점 후 다음 문제 버튼으로 due 복습을 계속 진행할 수 있습니다."
         : sessionMode === "wrong-note"
           ? "정답 처리 시 해당 오답 기록이 정리되고 다음 복습 단계로 이어집니다."
-          : ""
+          : "",
+    `<button
+      class="stitch-status-toggle"
+      type="button"
+      data-action="toggle-quiz-status"
+      aria-expanded="${state.showQuizStatus ? "true" : "false"}"
+      aria-controls="quiz-status-panel"
+    >학습 현황 ${state.showQuizStatus ? "닫기" : "보기"}</button>`
   );
 }
 
@@ -3215,6 +3225,12 @@ export async function handleUiAction(event, state, refresh) {
     }
 
     state.quizResult = null;
+    await refresh();
+    return;
+  }
+
+  if (action === "toggle-quiz-status") {
+    state.showQuizStatus = !state.showQuizStatus;
     await refresh();
     return;
   }

@@ -1838,6 +1838,35 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
   font-size: 1.7rem;
 }
 
+.app-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-title-row h1 {
+  margin: 0;
+}
+
+.route-quiz .stitch-status-toggle {
+  padding: 8px 13px;
+  border: 1px solid rgba(113, 32, 0, 0.2);
+  border-radius: 999px;
+  color: #712000;
+  background: #fff3eb;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.route-quiz .stitch-status-toggle:hover {
+  background: #ffe5d8;
+}
+
+.route-quiz .quiz-status-panel.is-collapsed {
+  display: none;
+}
+
 @media (max-width: 420px) {
   .inline-actions,
   .stitch-question-actions {

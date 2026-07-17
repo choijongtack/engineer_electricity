@@ -13,6 +13,7 @@ const state = {
   selectedMemorizationItemId: null,
   memorizationSession: null,
   quizSession: null,
+  showQuizStatus: false,
   wrongNoteSubjectId: "all",
   wrongNoteScope: "subject",
   reviewMode: false,
