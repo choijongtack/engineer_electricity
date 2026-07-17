@@ -1838,6 +1838,12 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
   font-size: 1.7rem;
 }
 
+.route-quiz .stitch-explanation-card p,
+.route-quiz .stitch-card-copy,
+.route-quiz .summary-card p {
+  white-space: pre-line;
+}
+
 .app-title-row {
   display: flex;
   align-items: center;

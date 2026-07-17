@@ -2,6 +2,7 @@
 [ ] `fire_subjects.json`, `fire_lessons.json`, `fire_questions.json`, `fire_mock-exam.json`이 정상 로드된다.
 [ ] `npm run data:rebuild-app`으로 5개 앱 학습 JSON을 순서대로 재생성할 수 있다.
 [ ] `fire_questions.json`에 중복 ID가 있으면 오류가 표시된다.
+[ ] `question_relations.json`이 로드되고 문제 정보 카드에 동일·유사·관련 기출이 표시된다.
 [ ] `npm run data:build` 후 `data/learning/v2-compatible` 결과물이 생성된다.
 [ ] `npm run data:validate`가 참조 무결성을 검증한다.
 [ ] `npm run data:seed` 후 `data/seed/supabase` 결과물이 생성된다.
@@ -51,5 +52,7 @@
 [ ] 메인 화면 상단 KPI 4개 카드의 라벨, 숫자, 단위, 설명이 세로 위계와 동일한 비율로 표시된다.
 [ ] 학습현황의 현재 진행 정보가 과목별 진도 목록과 별도 강조 박스로 표시된다.
 [ ] 기출문제 화면의 학습 현황 4개 카드는 기본 숨김이며 `학습 현황 보기/닫기` 버튼으로 표시 상태를 전환할 수 있다.
+[ ] 기출 문제는 채점 전 `핵심 포인트` 해설을 표시하고, 채점 후에는 해당 카드를 숨겨 결과 해설이 중복되지 않는다.
+[ ] raw 설명의 `오답 노트` 항목은 명확한 경계만 줄바꿈 정제되고, 앱용 JSON에서는 explanation 외 문제 정보가 변경되지 않는다.
 [ ] `02_learning_paths.json`의 30일/60일 경로가 `fire_questions.json`의 4,720개 문항 ID를 중복 없이 모두 포함한다.
 [ ] 정적 학습 JSON은 로컬 파일에서 로드되고, Firebase는 로그인 및 사용자 학습 진행률 동기화에만 사용된다.

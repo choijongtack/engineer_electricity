@@ -164,11 +164,12 @@ export function buildDailyStudyTarget(data, progress) {
     return buildFallbackTarget(data, progress, plan, reviewSummary);
   }
 
+  const currentTarget = progress.currentDailyTarget || {};
+  const isCurrentPersistedTarget = currentTarget.dayNo === dayNo && currentTarget.durationDays === plan.durationDays;
   const contentIds = unique(path.content_ids);
   const questionIds = unique(path.question_ids);
   const completedQuestionIds = new Set(Object.keys(progress.solvedQuestions || {}));
-  const currentTarget = progress.currentDailyTarget || {};
-  const currentTargetReviewQueueIds = currentTarget.dayNo === dayNo && currentTarget.durationDays === plan.durationDays
+  const currentTargetReviewQueueIds = isCurrentPersistedTarget
     ? unique(currentTarget.targetReviewQueueIds || [])
     : [];
   const reviewTargetCount = currentTargetReviewQueueIds.length || reviewSummary.totalDueCount;

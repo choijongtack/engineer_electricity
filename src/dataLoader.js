@@ -3,7 +3,8 @@ const cache = {
   lessons: null,
   questions: null,
   mockExam: null,
-  learningPaths: null
+  learningPaths: null,
+  questionRelations: null
 };
 
 function validateQuestionIds(questions) {
@@ -73,19 +74,25 @@ async function loadLearningPaths() {
   return cache.learningPaths;
 }
 
+async function loadQuestionRelations() {
+  cache.questionRelations ||= await loadJson("./data/question_relations.json");
+  return cache.questionRelations;
+}
+
 export async function getQuestionById(questionId) {
   const questions = await loadQuestions();
   return questions.find((question) => question.id === questionId) || null;
 }
 
 export async function loadAllData() {
-  const [subjects, lessons, questions, mockExam, learningPaths] = await Promise.all([
+  const [subjects, lessons, questions, mockExam, learningPaths, questionRelations] = await Promise.all([
     loadSubjects(),
     loadLessons(),
     loadQuestions(),
     loadMockExam(),
-    loadLearningPaths()
+    loadLearningPaths(),
+    loadQuestionRelations()
   ]);
 
-  return { subjects, lessons, questions, mockExam, learningPaths };
+  return { subjects, lessons, questions, mockExam, learningPaths, questionRelations };
 }

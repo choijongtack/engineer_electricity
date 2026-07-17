@@ -424,6 +424,13 @@ function clearDailyStudySessionForLesson(lessonId) {
   }
 }
 
+function getCompletedQuestionIds(progress, lessonId) {
+  return new Set([
+    ...Object.keys(progress.solvedQuestions || {}),
+    ...(progress.lessonProgress?.[lessonId]?.completedQuestionIds || [])
+  ]);
+}
+
 function getDailyLessonQuestionIds(target, lesson) {
   const relatedQuestionIds = getRelatedQuestionIds(lesson);
   const targetQuestionIds = new Set(target.questionIds || []);
@@ -474,7 +481,14 @@ async function startDailyLearning(data, progress, state) {
   let lesson = session ? data.lessons.find((entry) => entry.id === session.lessonId) : null;
 
   if (!lesson || !dailyLessons.some((entry) => entry.id === lesson.id)) {
-    lesson = dailyLessons.find((entry) => !isLessonFullyComplete(activeProgress, entry)) || dailyLessons[0];
+    const lessonNeedingConceptOrMemory = dailyLessons.find((entry) =>
+      !isLessonConceptComplete(activeProgress, entry.id) || !isLessonMemorizationPassed(activeProgress, entry.id)
+    );
+    const lessonWithPendingQuestions = dailyLessons.find((entry) => {
+      const completedQuestionIds = getCompletedQuestionIds(activeProgress, entry.id);
+      return getDailyLessonQuestionIds(target, entry).some((questionId) => !completedQuestionIds.has(questionId));
+    });
+    lesson = lessonNeedingConceptOrMemory || lessonWithPendingQuestions || dailyLessons[0];
     if (!lesson) {
       navigate("progress");
       return;
@@ -523,7 +537,7 @@ async function startDailyLearning(data, progress, state) {
     return;
   }
 
-  const completedQuestionIds = new Set(activeProgress.lessonProgress?.[lesson.id]?.completedQuestionIds || []);
+  const completedQuestionIds = getCompletedQuestionIds(activeProgress, lesson.id);
   const allQuestionIds = session.totalQuestionIds?.length
     ? session.totalQuestionIds
     : getDailyLessonQuestionIds(target, lesson);
@@ -1584,6 +1598,28 @@ function renderWrongNote(data, progress, state) {
   );
 }
 
+function renderQuestionRelationCard(data, question) {
+  const groups = data.questionRelations?.by_question_id?.[question.id] || { exact: [], similar: [], related: [] };
+  const labels = [
+    ["exact", "완전 동일", "🔴"],
+    ["similar", "유사 출제", "🟠"],
+    ["related", "관련 문제", "🔵"]
+  ];
+  const sections = labels
+    .map(([type, label, icon]) => {
+      const items = (groups[type] || []).slice(0, 3);
+      if (!items.length) return "";
+      return `<div class="question-relation-group"><strong>${icon} ${label} ${items.length}건</strong>${items.map((item) => {
+        const matched = data.questions.find((entry) => entry.id === item.question_id);
+        if (!matched) return "";
+        return `<p>${escapeHtml(matched.source?.examDate || "날짜 미상")} · ${matched.source?.questionNumber || "-"}번${type !== "exact" ? ` · ${Math.round(item.similarity * 100)}%` : ""}</p>`;
+      }).join("")}</div>`;
+    })
+    .join("");
+  if (!sections) return "";
+  return `<section class="stitch-surface-card question-relations-card"><div class="stitch-section-head"><div><p class="stitch-card-label">중복·유사 기출</p><h3>관련 출제 이력</h3></div></div>${sections}</section>`;
+}
+
 function renderQuiz(data, progress, state) {
   const selectedSubjectId = getSelectedSubjectId(data, progress, state.selectedSubjectId);
   const questionPool = getQuestionPool(data, state, selectedSubjectId);
@@ -1703,10 +1739,12 @@ function renderQuiz(data, progress, state) {
               ${progress.bookmarks.includes(activeQuestion.id) ? "북마크 해제" : "북마크 추가"}
             </button>
           </section>
-          <section class="summary-card">
-            <h3>해설 요약</h3>
-            <p>${activeQuestion.explanation}</p>
-          </section>
+          ${!result ? `
+            <section class="summary-card">
+              <h3>핵심 포인트</h3>
+              <p>${activeQuestion.explanation}</p>
+            </section>
+          ` : ""}
           <section class="summary-card">
             <h3>다시 나오는 이유</h3>
             <p>${
@@ -1891,7 +1929,6 @@ const AUTH_REQUIRED_ACTIONS = new Set([
   "start-due-review",
   "start-daily-learning",
   "start-next-daily-learning",
-  "start-next-daily-review",
   "complete-lesson",
   "submit-question",
   "advance-quiz",
@@ -2235,15 +2272,20 @@ function renderStageOneHome(data, progress) {
     spaced: selectedReviewItems.filter((item) => item.reason !== "wrong" && item.reason !== "frequent").length
   };
   const hasDueReviews = selectedReviewItems.length > 0;
-  const reviewComplete = !hasDueReviews;
-  const dailyTargetComplete = dailyTarget.totalTodayCount > 0 && dailyTarget.remainingTodayCount === 0;
   const dayNo = dailyTarget.dayNo;
   const nextDayNo = Math.min(dayNo + 1, planSummary.durationDays);
+  const currentTarget = progress.currentDailyTarget || {};
+  const currentTargetCompleted = Boolean(currentTarget.completedAt)
+    && Number(currentTarget.dayNo) === Number(dayNo)
+    && currentTarget.durationDays === planSummary.durationDays;
+  const reviewComplete = learningComplete && !hasDueReviews && currentTargetCompleted;
+  const reviewReady = learningComplete && hasDueReviews;
+  const canStartNextDay = learningComplete && reviewComplete && dayNo < planSummary.durationDays;
   const learningActionButtons = learningComplete
     ? `
       <div class="stage1-action-stack">
         <button class="stage1-secondary full-width" type="button" disabled>${dayNo}일차 학습완료</button>
-        ${dailyTargetComplete && dayNo < planSummary.durationDays
+        ${canStartNextDay
           ? `<button class="stage1-primary full-width" data-action="start-next-daily-learning">${nextDayNo}일차 학습 시작</button>`
           : ""}
       </div>
@@ -2253,22 +2295,28 @@ function renderStageOneHome(data, progress) {
     ? `
       <div class="stage1-action-stack">
         <button class="stage1-secondary full-width" type="button" disabled>${dayNo}일차 복습완료</button>
-        ${dailyTargetComplete && dayNo < planSummary.durationDays
-          ? `<button class="stage1-primary full-width" data-action="start-next-daily-review">${nextDayNo}일차 복습 시작</button>`
-          : ""}
       </div>
     `
-    : `
+    : reviewReady
+      ? `
       <div class="stage1-action-stack">
-        <button class="stage1-primary full-width" data-route="wrong-note">${dayNo}일차 복습 시작</button>
+        <button class="stage1-primary full-width" data-action="start-due-review">${dayNo}일차 복습 시작</button>
+        <button class="stage1-secondary full-width" data-route="wrong-note">복습 상세 보기</button>
+      </div>
+    `
+      : `
+      <div class="stage1-action-stack">
+        <button class="stage1-secondary full-width" type="button" disabled>${dayNo}일차 복습 대기</button>
         <button class="stage1-secondary full-width" data-route="wrong-note">복습 상세 보기</button>
       </div>
     `;
-  const sidebarAction = learningComplete
-    ? dailyTargetComplete && dayNo < planSummary.durationDays
+  const sidebarAction = !learningComplete
+    ? { label: `▶ ${dayNo}일차 학습 시작`, action: "start-daily-learning" }
+    : canStartNextDay
       ? { label: `▶ ${nextDayNo}일차 학습 시작`, action: "start-next-daily-learning" }
-      : { label: `${dayNo}일차 학습완료`, disabled: true }
-    : { label: `▶ ${dayNo}일차 학습 시작`, action: "start-daily-learning" };
+      : reviewReady
+        ? { label: `▶ ${dayNo}일차 복습 시작`, action: "start-due-review" }
+        : { label: `${dayNo}일차 복습 대기`, disabled: true };
   const reviewAlertTitle = stats.overdueReviewCount > 0 ? "밀린 복습 우선 처리" : hasDueReviews ? "오늘 복습 처리" : "복습 대기 없음";
   const reviewAlertCopy = stats.overdueReviewCount > 0
     ? `${stats.overdueReviewCount}개 문항을 우선 처리하세요.`
@@ -2765,15 +2813,17 @@ function renderStitchQuiz(data, progress, state) {
               <div class="stitch-mini-row"><strong>북마크</strong><p>${progress.bookmarks.includes(activeQuestion.id) ? "저장됨" : "미저장"}</p></div>
             </div>
           </section>
-          <section class="stitch-surface-card">
-            <div class="stitch-section-head">
-              <div>
-                <p class="stitch-card-label">해설 요약</p>
-                <h3>핵심 포인트</h3>
+          ${renderQuestionRelationCard(data, activeQuestion)}
+          ${!result ? `
+            <section class="stitch-surface-card">
+              <div class="stitch-section-head">
+                <div>
+                  <h3>핵심 포인트</h3>
+                </div>
               </div>
-            </div>
-            <p class="stitch-card-copy">${activeQuestion.explanation}</p>
-          </section>
+              <p class="stitch-card-copy">${activeQuestion.explanation}</p>
+            </section>
+          ` : ""}
           <section class="stitch-surface-card">
             <div class="stitch-section-head">
               <div>
@@ -3015,18 +3065,8 @@ export async function handleUiAction(event, state, refresh) {
 
   if (action === "start-next-daily-learning") {
     const data = await loadAllData();
-    const progress = getProgress();
+    const progress = maybeCompleteCurrentDailyTarget(data, getProgress());
     await startDailyLearning(data, progress, state);
-    return;
-  }
-
-  if (action === "start-next-daily-review") {
-    const data = await loadAllData();
-    const progress = advanceCompletedDailyTargetForStart(data, getProgress());
-    if (!startDueReviewSession(state, progress, data)) {
-      state.wrongNoteScope = "subject";
-      navigate("wrong-note");
-    }
     return;
   }
 

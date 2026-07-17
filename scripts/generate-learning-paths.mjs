@@ -46,6 +46,12 @@ async function main() {
     mappedQuestionIds
   });
 
+  const updatedRuntimeLessons = runtimeLessons.map((lesson) => ({
+    ...lesson,
+    relatedQuestionIds: unique(questionIdsByContentId.get(lesson.id) || lesson.relatedQuestionIds || [])
+  }));
+  await writeJson(path.join(dataRoot, "fire_lessons.json"), updatedRuntimeLessons);
+
   const orderedBlocks = contents.map((content) => ({
     content,
     questionIds: unique(questionIdsByContentId.get(content.content_id) || [])
@@ -85,9 +91,8 @@ async function main() {
 }
 
 function buildRoute({ routeId, routeName, routeType, dayCount, orderedBlocks, questionById }) {
-  const totalQuestions = orderedBlocks.reduce((sum, block) => sum + block.questionIds.length, 0);
-  const targets = distributeCounts(totalQuestions, dayCount);
-  const days = targets.map((target, index) => ({
+  const lessonTargets = distributeCounts(orderedBlocks.length, dayCount);
+  const days = lessonTargets.map((target, index) => ({
     schema_version: SCHEMA_VERSION,
     path_id: `${routeId}_day_${String(index + 1).padStart(2, "0")}`,
     route_id: routeId,
@@ -104,46 +109,23 @@ function buildRoute({ routeId, routeName, routeType, dayCount, orderedBlocks, qu
   }));
 
   let dayIndex = 0;
-  let remainingCapacity = targets[0];
-  const assignedContentIds = new Set();
+  let remainingCapacity = lessonTargets[0] || 0;
 
   for (const block of orderedBlocks) {
-    let offset = 0;
-
-    while (offset < block.questionIds.length && dayIndex < days.length) {
-      if (remainingCapacity === 0) {
-        dayIndex += 1;
-        remainingCapacity = targets[dayIndex] || 0;
-        continue;
-      }
-
-      const takeCount = Math.min(remainingCapacity, block.questionIds.length - offset);
-      if (!assignedContentIds.has(block.content.content_id)) {
-        pushUnique(days[dayIndex].content_ids, block.content.content_id);
-        pushUnique(days[dayIndex].subject_ids, normalizeRouteSubject(block.content.subject));
-        assignedContentIds.add(block.content.content_id);
-      }
-
-      const slice = block.questionIds.slice(offset, offset + takeCount);
-      days[dayIndex].question_ids.push(...slice);
-      offset += takeCount;
-      remainingCapacity -= takeCount;
-
-      if (remainingCapacity === 0) {
-        dayIndex += 1;
-        remainingCapacity = targets[dayIndex] || 0;
-      }
+    while (remainingCapacity === 0 && dayIndex < days.length - 1) {
+      dayIndex += 1;
+      remainingCapacity = lessonTargets[dayIndex] || 0;
     }
+
+    const day = days[dayIndex] || days[days.length - 1];
+    pushUnique(day.content_ids, block.content.content_id);
+    pushUnique(day.subject_ids, normalizeRouteSubject(block.content.subject));
+    day.question_ids.push(...block.questionIds);
+    remainingCapacity = Math.max(remainingCapacity - 1, 0);
   }
 
   for (const day of days) {
-    day.learning_focus = buildLearningFocus(day.content_ids, orderedBlocks);
-    day.estimated_minutes = estimateMinutes(day.question_ids.length, day.content_ids.length);
-  }
-
-  assignUnmappedContents(days, orderedBlocks);
-
-  for (const day of days) {
+    day.question_ids = unique(day.question_ids);
     day.learning_focus = buildLearningFocus(day.content_ids, orderedBlocks);
     day.estimated_minutes = estimateMinutes(day.question_ids.length, day.content_ids.length);
   }
