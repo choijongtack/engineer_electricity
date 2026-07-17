@@ -823,6 +823,12 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
 }
 
 @media (max-width: 720px) {
+  .route-quiz .stitch-kpi-card strong,
+  .route-quiz .stitch-question-head h3,
+  .route-quiz .question-panel h2 {
+    font-size: 20px;
+  }
+
   .stitch-topbar,
   .stitch-page-frame {
     padding: 18px;
