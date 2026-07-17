@@ -3420,6 +3420,13 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
     backdrop-filter: blur(16px);
   }
 
+  .stage1-shell .stage1-sidebar {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: start;
+    gap: 0;
+  }
+
   .stage1-shell .stage1-brand,
   .stage1-shell .stitch-sidebar-brand,
   .stage1-shell .stage1-sidebar-bottom,
@@ -3440,6 +3447,13 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
     scrollbar-width: none;
   }
 
+  .stage1-shell .stage1-sidebar-nav {
+    display: contents;
+    width: auto;
+    padding-right: 0;
+    overflow: visible;
+  }
+
   .stage1-shell .stage1-sidebar-nav::-webkit-scrollbar,
   .stitch-shell .stitch-sidebar-nav::-webkit-scrollbar {
     display: none;
@@ -3448,8 +3462,9 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
   .stage1-shell .stage1-sidebar-item,
   .stage1-shell .stitch-nav-item,
   .stitch-shell .stitch-nav-item {
-    flex: 0 0 76px;
-    width: 76px;
+    flex: none;
+    width: 100%;
+    min-width: 0;
     min-height: 48px;
     justify-content: center;
     gap: 3px;
@@ -3466,22 +3481,18 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
 
   .stage1-mobile-more {
     display: block !important;
-    width: 76px !important;
+    width: 100% !important;
     height: 48px;
-    flex: 0 0 76px;
-    position: absolute;
-    right: 8px;
-    top: 8px;
+    min-width: 0;
+    position: relative;
+    right: auto;
+    top: auto;
     bottom: auto;
-  }
-
-  .stage1-shell .stage1-sidebar-nav {
-    padding-right: 82px;
   }
 
   .stage1-mobile-more summary {
     display: grid !important;
-    width: 76px !important;
+    width: 100% !important;
     height: 48px;
     min-height: 48px;
     box-sizing: border-box;
