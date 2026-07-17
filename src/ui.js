@@ -2906,6 +2906,10 @@ export async function handleUiAction(event, state, refresh) {
     return;
   }
 
+  if (actionButton.tagName === "SELECT" && event.type !== "change") {
+    return;
+  }
+
   const { action } = actionButton.dataset;
 
   if (action === "dismiss-auth-notice") {
