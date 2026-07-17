@@ -1647,18 +1647,6 @@ function renderQuiz(data, progress, state) {
                   .join("")}
               </select>
             </label>
-            <label>
-              <span>문제 선택</span>
-              <select data-action="select-question">
-                ${questionPool
-                  .map(
-                    (question) => `
-                      <option value="${question.id}" ${question.id === activeQuestion.id ? "selected" : ""}>${question.source.questionNumber}번 - ${question.id}</option>
-                    `
-                  )
-                  .join("")}
-              </select>
-            </label>
           </section>
 
           <article class="question-panel">
@@ -1667,9 +1655,6 @@ function renderQuiz(data, progress, state) {
               <span class="status-pill">${activeQuestion.source.questionNumber}번</span>
             </div>
             <h2>${activeQuestion.question}</h2>
-            <div class="tag-list">
-              ${activeQuestion.tags.map((tag) => `<span class="tag-chip">${tag}</span>`).join("")}
-            </div>
             <div class="choice-list">
               ${activeQuestion.choices
                 .map(
@@ -2720,18 +2705,6 @@ function renderStitchQuiz(data, progress, state) {
                   .join("")}
               </select>
             </label>
-            <label class="stitch-filter-shell">
-              <span>문제 선택</span>
-              <select data-action="select-question">
-                ${questionPool
-                  .map(
-                    (question) => `
-                      <option value="${question.id}" ${question.id === activeQuestion.id ? "selected" : ""}>${question.source.questionNumber}번 - ${question.id}</option>
-                    `
-                  )
-                  .join("")}
-              </select>
-            </label>
           </section>
 
           <article class="stitch-question-card">
@@ -2740,15 +2713,10 @@ function renderStitchQuiz(data, progress, state) {
                  <span class="stitch-question-chip">${activeQuestion.source.examDate}</span>
                  <h3>${activeQuestion.question}</h3>
                  ${renderQuestionImages(activeQuestion)}
-                 <p>${findSubjectName(data.subjects, activeQuestion.subjectId)} · ${activeQuestion.source.questionNumber}번</p>
               </div>
               <button class="stitch-bookmark-button" data-action="toggle-bookmark" data-question-id="${activeQuestion.id}">
                 ${progress.bookmarks.includes(activeQuestion.id) ? "북마크됨" : "북마크"}
               </button>
-            </div>
-
-            <div class="stitch-tag-row">
-              ${activeQuestion.tags.map((tag) => `<span class="stitch-pill">${tag}</span>`).join("")}
             </div>
 
             <div class="stitch-option-stack">
@@ -3098,13 +3066,6 @@ export async function handleUiAction(event, state, refresh) {
     state.selectedQuestionId = null;
     state.quizResult = null;
     resetQuizSession(state);
-    await refresh();
-    return;
-  }
-
-  if (action === "select-question") {
-    state.selectedQuestionId = event.target.value;
-    state.quizResult = null;
     await refresh();
     return;
   }

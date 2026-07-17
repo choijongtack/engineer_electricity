@@ -3471,7 +3471,8 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
     flex: 0 0 76px;
     position: absolute;
     right: 8px;
-    bottom: 8px;
+    top: 8px;
+    bottom: auto;
   }
 
   .stage1-shell .stage1-sidebar-nav {
