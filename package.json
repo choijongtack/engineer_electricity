@@ -21,8 +21,12 @@
     "import:cbtbank": "node ./scripts/import-cbtbank-questions.mjs",
     "serve:python": "python -m http.server 8080",
     "serve:npx": "npx serve ."
+    ,"test:learning:background": "node ./scripts/learning-30d-background.mjs"
   },
   "dependencies": {
     "firebase": "^12.16.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1"
   }
 }

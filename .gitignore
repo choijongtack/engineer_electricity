@@ -1,6 +1,8 @@
 node_modules/
 .playwright-cli/
 .playwright-mcp/
+tests/.playwright-profile-30d/
+tests/reports/
 .vscode/
 .codex/
 .agents/

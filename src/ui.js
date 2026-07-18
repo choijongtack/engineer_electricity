@@ -842,7 +842,7 @@ function renderHome(data, progress) {
           <h3>오늘 요약</h3>
           <div class="summary-stats">
             <div><strong>${stats.completedCount}</strong><span>개념 완료</span></div>
-            <div><strong>${stats.dueReviewCount}</strong><span>오늘 복습</span></div>
+            <div><strong>${stats.dueReviewCount}</strong><span>오늘 복습 문제</span></div>
             <div><strong>${percent(stats.accuracy)}</strong><span>정답률</span></div>
           </div>
           <div class="summary-stats">
@@ -1348,6 +1348,7 @@ function renderSettings(data, progress) {
   const planSummary = buildStudyPlanSummary(data, progress);
   const studyPlanOptions = getStudyPlanOptions();
   const cloud = getCloudAuthState();
+  const emulatorMode = new URLSearchParams(window.location.search).get("emulator") === "1";
   const cloudUser = cloud.user?.email || "로그인하지 않음";
 
   return layout(
@@ -1357,7 +1358,7 @@ function renderSettings(data, progress) {
       <section class="content-grid content-grid-main">
         <div class="stack-column">
           <!-- cloud sync settings removed -->
-          <section class="panel-card" hidden>
+          <section class="panel-card" ${emulatorMode ? "" : "hidden"}>
             <div class="section-head">
               <div>
                 <p class="eyebrow">클라우드 동기화</p>
@@ -2083,7 +2084,7 @@ function renderStitchHome(data, progress) {
           <p>${data.lessons.length}개 lesson 중 완료 수</p>
         </article>
         <article class="stitch-kpi-card">
-          <span>오늘 복습</span>
+          <span>오늘 복습 문제</span>
           <strong>${stats.dueReviewCount}</strong>
           <p>지금 바로 처리할 due 항목</p>
         </article>
@@ -2331,7 +2332,7 @@ function renderStageOneHome(data, progress) {
           <div class="stage1-meter"><i style="width:${percent(stats.lessonProgress)}"></i></div>
         </article>
         <article class="stage1-kpi">
-          <span>오늘 복습</span>
+          <span>오늘 복습 문제</span>
           <div class="stage1-kpi-value"><strong>${stats.dueReviewCount}</strong><small>개 문항</small></div>
           <p>지금 바로 처리하세요.</p>
         </article>
@@ -2358,9 +2359,9 @@ function renderStageOneHome(data, progress) {
         </section>
 
         <section class="stage1-card stage1-mockup-review">
-          <div class="stage1-card-heading"><div><span class="stage1-card-label">오늘의 복습 학습</span><h3>${selectedReviewItems.length}개 선정</h3></div><span class="stage1-icon">↻</span></div>
+          <div class="stage1-card-heading"><div><span class="stage1-card-label">오늘 복습 문제</span><h3>${selectedReviewItems.length}개</h3></div><span class="stage1-icon">↻</span></div>
           <div class="stage1-review-split">
-            <div><span>오늘 복습</span><strong>${selectedReviewItems.length}</strong><small>전체 대상</small></div>
+            <div><span>오늘 복습 문제</span><strong>${selectedReviewItems.length}</strong><small>이번 복습 세션</small></div>
             <div><span>오답</span><strong>${reviewSelectionCounts.wrong}</strong><small>우선 처리</small></div>
             <div><span>빈출 보강</span><strong>${reviewSelectionCounts.frequent}</strong><small>lesson 보강</small></div>
             <div><span>간격 복습</span><strong>${reviewSelectionCounts.spaced}</strong><small>정답 반복</small></div>
@@ -2682,6 +2683,7 @@ function renderStitchQuiz(data, progress, state) {
   const todayReviewCount = sessionMode === "review-queue"
     ? queueSize
     : buildReviewCounts(progress).totalDueCount;
+  const reviewCountLabel = sessionMode === "review-queue" ? "현재 복습 세션" : "오늘 복습 문제";
   const nextReviewLabel = result ? (result.isCorrect ? "정답 처리: 다음 간격 복습으로 이동" : "오답 처리: 빠른 복습 큐로 이동") : "";
   const selectedChoice = result ? solvedEntry?.selectedChoice : null;
   const choiceMarkup = activeQuestion.choices
@@ -2725,7 +2727,7 @@ function renderStitchQuiz(data, progress, state) {
           <p>${displayProgressLabel}</p>
         </article>
         <article class="stitch-kpi-card">
-          <span>오늘 복습</span>
+          <span>${reviewCountLabel}</span>
           <strong>${todayReviewCount}</strong>
           <p>기출 복습 대기 항목</p>
         </article>
