@@ -334,6 +334,20 @@ function isCurrentDailySession(session) {
   return Boolean(session && session.status !== "completed");
 }
 
+function isDailySessionForTarget(session, target) {
+  if (!isCurrentDailySession(session)) {
+    return false;
+  }
+
+  const targetLessonIds = new Set(target.contentIds || []);
+  return (
+    Number(session.dayNo) === Number(target.dayNo) &&
+    (!target.routeId || session.routeId === target.routeId) &&
+    (!target.pathId || !session.pathId || session.pathId === target.pathId) &&
+    targetLessonIds.has(session.lessonId)
+  );
+}
+
 function getCurrentTargetReviewQueueIds(progress) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -434,14 +448,14 @@ function getCompletedQuestionIds(progress, lessonId) {
 function getDailyLessonQuestionIds(target, lesson) {
   const relatedQuestionIds = getRelatedQuestionIds(lesson);
   const targetQuestionIds = new Set(target.questionIds || []);
-  const scopedQuestionIds = relatedQuestionIds.filter((questionId) => targetQuestionIds.has(questionId));
-  return scopedQuestionIds.length ? scopedQuestionIds : relatedQuestionIds;
+  return relatedQuestionIds.filter((questionId) => targetQuestionIds.has(questionId));
 }
 
 function createDailyStudySession(target, lesson, stage, questionIds = []) {
   return {
     dayKey: getTodayKey(),
     routeId: target.routeId || null,
+    pathId: target.pathId || null,
     dayNo: target.dayNo,
     lessonId: lesson.id,
     stage,
@@ -477,7 +491,7 @@ async function startDailyLearning(data, progress, state) {
   const target = planSummary.dailyTarget;
   persistCurrentDailyTarget(target, activeProgress, planSummary.durationDays);
   const dailyLessons = data.lessons.filter((lesson) => target.contentIds.includes(lesson.id));
-  let session = isCurrentDailySession(activeProgress.dailyStudySession) ? activeProgress.dailyStudySession : null;
+  let session = isDailySessionForTarget(activeProgress.dailyStudySession, target) ? activeProgress.dailyStudySession : null;
   let lesson = session ? data.lessons.find((entry) => entry.id === session.lessonId) : null;
 
   if (!lesson || !dailyLessons.some((entry) => entry.id === lesson.id)) {
@@ -604,6 +618,9 @@ function startDueReviewSession(state, progress, data, selectedQuestionId = null,
       reason: item.reason
     }))
   };
+  if (options.targetReviewQueueIds) {
+    state.quizSession.targetReviewQueueIds = [...options.targetReviewQueueIds];
+  }
   navigate("quiz");
   return true;
 }
@@ -750,7 +767,6 @@ function stitchNavItems() {
     ["home", "대시보드"],
     ["concept", "개념 학습"],
     ["memorization", "암기 학습"],
-    ["wrong-note", "복습 학습"],
     ["mock-exam", "모의고사"],
     ["progress", "학습 현황"],
     ["settings", "설정"]
@@ -1887,7 +1903,6 @@ function navItems() {
     ["home", "대시보드"],
     ["concept", "개념 학습"],
     ["memorization", "암기 학습"],
-    ["wrong-note", "복습 학습"],
     ["mock-exam", "모의고사"],
     ["progress", "학습 현황"],
     ["settings", "설정"]
@@ -3045,14 +3060,17 @@ export async function handleUiAction(event, state, refresh) {
   if (action === "start-due-review") {
     const data = await loadAllData();
     const progress = getProgress();
+    const currentTargetReviewQueueIds = progress.currentDailyTarget?.targetReviewQueueIds || [];
+    const scopedTargetReviewQueueIds = currentTargetReviewQueueIds.length ? currentTargetReviewQueueIds : null;
     const reviewOptions = getRoute() === "wrong-note"
       ? {
           subjectId: state.wrongNoteScope === "mock-exam"
             ? null
             : getSelectedSubjectId(data, progress, state.wrongNoteSubjectId || state.selectedSubjectId),
-          sourceType: state.wrongNoteScope === "mock-exam" ? MOCK_EXAM_SOURCE : null
+          sourceType: state.wrongNoteScope === "mock-exam" ? MOCK_EXAM_SOURCE : null,
+          targetReviewQueueIds: scopedTargetReviewQueueIds
         }
-      : {};
+      : { targetReviewQueueIds: scopedTargetReviewQueueIds };
     if (!startDueReviewSession(state, progress, data, actionButton.dataset.questionId || null, reviewOptions)) {
       window.alert("오늘 처리할 복습 문항이 없습니다.");
     }

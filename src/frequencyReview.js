@@ -84,16 +84,18 @@ function buildFrequentReviewItems(data, progress, { subjectId = null, sourceType
 }
 
 export function buildMixedReviewItems(data, progress, options = {}) {
-  const { limit = DEFAULT_REVIEW_LIMIT, subjectId = null, sourceType = null } = options;
+  const { limit = DEFAULT_REVIEW_LIMIT, subjectId = null, sourceType = null, targetReviewQueueIds = null } = options;
   const dueItems = getReviewQueueItems(progress, {
     dueOnly: true,
     itemType: "question",
     subjectId,
     sourceType
   });
-  const wrongItems = dueItems.filter((item) => item.reason === "wrong");
-  const spacedItems = dueItems.filter((item) => item.reason !== "wrong");
-  const frequentItems = buildFrequentReviewItems(data, progress, { subjectId, sourceType });
+  const targetIds = targetReviewQueueIds ? new Set(targetReviewQueueIds) : null;
+  const scopedDueItems = targetIds ? dueItems.filter((item) => targetIds.has(item.queueId)) : dueItems;
+  const wrongItems = scopedDueItems.filter((item) => item.reason === "wrong");
+  const spacedItems = scopedDueItems.filter((item) => item.reason !== "wrong");
+  const frequentItems = targetIds ? [] : buildFrequentReviewItems(data, progress, { subjectId, sourceType });
   const wrongLimit = Math.ceil(limit * MIX_TARGETS.wrong);
   const frequentLimit = Math.ceil(limit * MIX_TARGETS.frequent);
   const spacedLimit = Math.max(limit - wrongLimit - frequentLimit, 0);

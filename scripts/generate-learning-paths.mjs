@@ -30,8 +30,11 @@ async function main() {
   for (const content of contents) {
     for (const questionId of content.relatedQuestionIds || []) {
       if (!questionById.has(questionId) || !contentById.has(content.content_id)) {
-      continue;
-    }
+        continue;
+      }
+      if (mappedQuestionIds.has(questionId)) {
+        continue;
+      }
       const current = questionIdsByContentId.get(content.content_id) || [];
       current.push(questionId);
       questionIdsByContentId.set(content.content_id, current);
