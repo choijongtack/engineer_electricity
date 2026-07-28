@@ -1695,20 +1695,21 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 7px;
-  height: 100px;
+  gap: 10px;
+  height: 145px;
   margin-top: 16px;
   padding: 0 4px;
   border-bottom: 1px solid var(--line);
 }
 
 .stage1-week-bar {
-  display: grid;
-  align-content: end;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   justify-items: center;
-  gap: 5px;
+  gap: 3px;
   height: 100%;
-  min-width: 14px;
+  min-width: 22px;
   color: var(--muted);
   font-size: 0.63rem;
 }
@@ -1716,10 +1717,32 @@ label.stitch-option-card:has(input:checked) .stitch-option-index {
 .stage1-week-bar i {
   display: block;
   width: 100%;
-  height: var(--stage1-bar-height);
+  /* Keep completion bars proportional: 100% is the full bar area, 78% is 0.78 of it. */
+  height: calc(var(--stage1-bar-height) * 0.7);
+  flex: 0 0 calc(var(--stage1-bar-height) * 0.7);
   min-height: 14px;
   border-radius: 5px 5px 0 0;
   background: var(--secondary);
+}
+
+.stage1-week-bar em,
+.stage1-week-bar b {
+  font-size: 0.55rem;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.stage1-week-bar em {
+  color: var(--ink);
+}
+
+.stage1-week-bar b {
+  color: var(--muted);
+}
+
+.stage1-week-bar[style*="--stage1-completion:100%"] i {
+  background: #1f5968;
 }
 
 .stage1-week-bar:nth-child(odd) i {

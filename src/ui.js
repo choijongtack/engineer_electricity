@@ -2272,9 +2272,33 @@ function renderStageOneHome(data, progress) {
     const total = Math.max(summary.lessonCount, 1);
     return { subject, percent: Math.round((summary.completedLessons / total) * 100) };
   });
-  const weeklyBars = [58, 76, 92, 64, 82, 48, 30]
+  const weekLabels = ["월", "화", "수", "목", "금", "토", "일"];
+  const planPaths = (data.learningPaths || []).filter((path) =>
+    path.route_type === planSummary.routeType || path.route_id?.includes(String(planSummary.durationDays))
+  );
+  const currentWeekStart = Math.floor((Number(dailyTarget.dayNo) - 1) / 7) * 7 + 1;
+  const weekTargets = weekLabels.map((label, index) => {
+    const dayNo = currentWeekStart + index;
+    const path = planPaths.find((entry) => Number(entry.day_no) === dayNo);
+    const questionIds = [...new Set(path?.question_ids || [])];
+    const plannedCount = questionIds.length;
+    const completedQuestions = questionIds.filter((questionId) => progress.solvedQuestions?.[questionId]).length;
+    const completedCount = completedQuestions;
+    const completionRate = plannedCount ? Math.round((completedCount / plannedCount) * 100) : 0;
+    return { label, dayNo, plannedCount, completedCount, completionRate };
+  });
+  const weeklyQuestionCount = weekTargets.reduce((total, target) => total + target.plannedCount, 0);
+  const weeklyBars = weekTargets
+    .map((target) => {
+      const height = target.plannedCount ? target.completionRate : 0;
+      const title = `DAY ${target.dayNo}: ${target.completedCount}/${target.plannedCount} lesson 완료 (${target.completionRate}%)`;
+      return `<span class="stage1-week-bar" title="${title}" aria-label="${title}" style="--stage1-bar-height:${height}%;--stage1-completion:${target.completionRate}%"><i></i><small>${target.label}</small><em>${target.completedCount}/${target.plannedCount}</em><b>${target.completionRate}%</b></span>`;
+    })
+    .join("");
+/*
     .map((height, index) => `<span class="stage1-week-bar" style="--stage1-bar-height:${height}%"><i></i><small>${["월", "화", "수", "목", "금", "토", "일"][index]}</small></span>`)
     .join("");
+*/
   const lessonRows = (dailyLessons.length ? dailyLessons : nextLesson ? [nextLesson] : []).slice(0, 4).map((lesson) => `
     <button class="stage1-path-item" data-route="concept" data-subject-id="${lesson.subjectId}" data-lesson-id="${lesson.id}">
       <span class="stage1-path-dot"></span>

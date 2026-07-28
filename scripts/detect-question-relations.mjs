@@ -7,6 +7,7 @@ const outputPath = path.join(root, "data", "question_relations.json");
 const SIMILAR_THRESHOLD = 0.85;
 const RELATED_THRESHOLD = 0.65;
 const MAX_RELATED_PER_QUESTION = 8;
+const SAME_ANSWER_TEXT_BONUS = 0.1;
 
 const questions = JSON.parse(await readFile(inputPath, "utf8"));
 const normalized = questions.map(toComparableQuestion);
@@ -46,16 +47,29 @@ for (const item of normalized) {
   }
 
   const matches = [...candidates]
-    .map((candidate) => ({ candidate, score: jaccard(item.tokens, candidate.tokens) }))
+    .map((candidate) => {
+      const baseScore = jaccard(item.tokens, candidate.tokens);
+      const answerTextSame = item.answerText === candidate.answerText && Boolean(item.answerText);
+      return {
+        candidate,
+        baseScore,
+        answerTextSame,
+        score: Math.min(1, baseScore + (answerTextSame ? SAME_ANSWER_TEXT_BONUS : 0))
+      };
+    })
     .filter(({ score }) => score >= RELATED_THRESHOLD)
     .sort((a, b) => b.score - a.score)
     .slice(0, MAX_RELATED_PER_QUESTION);
 
-  for (const { candidate, score } of matches) {
+  for (const { candidate, score, baseScore, answerTextSame } of matches) {
+    const exactPair = exactGroups.get(item.exactKey)?.some((entry) => entry.id === candidate.id);
+    if (exactPair) continue;
     const type = score >= SIMILAR_THRESHOLD ? "similar" : "related";
     addRelation(item, candidate, type, score, {
       question_text_similarity: jaccard(item.questionTokens, candidate.questionTokens),
       choice_similarity: jaccard(item.choiceTokens, candidate.choiceTokens),
+      base_similarity: Number(baseScore.toFixed(4)),
+      answer_text_same: answerTextSame,
       answer_same: item.answer === candidate.answer,
       subject_same: item.subjectId === candidate.subjectId
     });
@@ -66,8 +80,8 @@ const byQuestionId = Object.fromEntries(normalized.map((item) => [item.id, { exa
 for (const relation of relations) {
   const entry = toDisplayRelation(relation, relation.question_id);
   const reverse = toDisplayRelation(relation, relation.matched_question_id);
-  byQuestionId[relation.question_id][relation.relation_type].push(reverse);
-  byQuestionId[relation.matched_question_id][relation.relation_type].push(entry);
+  byQuestionId[relation.question_id][relation.relation_type].push(entry);
+  byQuestionId[relation.matched_question_id][relation.relation_type].push(reverse);
 }
 
 for (const groups of Object.values(byQuestionId)) {
@@ -102,6 +116,7 @@ function toComparableQuestion(question) {
     questionTokens: tokens(questionText),
     choiceTokens: tokens(choiceText),
     tokens: tokens(fullText),
+    answerText: normalize(question.choices?.[Number(question.answer) - 1]?.text || ""),
     exactKey: `${questionText}|${choiceText}|${question.answer}`
   };
 }
