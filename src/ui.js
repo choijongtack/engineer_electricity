@@ -286,7 +286,7 @@ function getQuizAdvanceLabel(state) {
 
 function startLessonQuizSession(state, progress, lesson) {
   const pendingQuestionIds = getPendingLessonQuestionIds(progress, lesson);
-  const questionIds = pendingQuestionIds.length ? pendingQuestionIds : getRelatedQuestionIds(lesson);
+  const questionIds = pendingQuestionIds;
 
   state.quizSession = {
     mode: "lesson-quiz",
@@ -3462,6 +3462,10 @@ export async function handleUiAction(event, state, refresh) {
       const relatedQuestionIds = getRelatedQuestionIds(lesson);
       if (relatedQuestionIds.length) {
         const questionIds = startLessonQuizSession(state, progress, lesson);
+        if (!questionIds.length) {
+          completeLessonQuizFlow(data, progress, state, lesson);
+          return;
+        }
         updateDailyStudySession(item.lessonId, {
           stage: "quiz",
           questionIds,

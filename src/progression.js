@@ -41,9 +41,17 @@ export function isLessonFullyComplete(progress, lesson) {
 }
 
 export function getPendingLessonQuestionIds(progress, lesson) {
-  const relatedQuestionIds = getRelatedQuestionIds(lesson);
+  const relatedQuestionIds = [...new Set(getRelatedQuestionIds(lesson))];
   const completedQuestionIds = new Set(progress.lessonProgress?.[lesson.id]?.completedQuestionIds || []);
-  return relatedQuestionIds.filter((questionId) => !completedQuestionIds.has(questionId));
+  const assignedToOtherLessons = new Set(
+    Object.entries(progress.lessonProgress || {})
+      .filter(([lessonId]) => lessonId !== lesson.id)
+      .flatMap(([, lessonProgress]) => lessonProgress?.completedQuestionIds || [])
+  );
+
+  return relatedQuestionIds.filter(
+    (questionId) => !completedQuestionIds.has(questionId) && !assignedToOtherLessons.has(questionId)
+  );
 }
 
 export function getPendingWrongAnswers(progress, { subjectId = null, sourceType = null } = {}) {
