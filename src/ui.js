@@ -595,6 +595,7 @@ function startDueReviewSession(state, progress, data, selectedQuestionId = null,
     frequencyCount: nextItem.frequencyCount || null,
     questionIds: orderedItems.map((item) => item.itemId),
     totalQuestionIds: orderedItems.map((item) => item.itemId),
+    reviewRetryCounts: {},
     reviewItems: orderedItems.map((item) => ({
       questionId: item.itemId,
       sourceType: item.sourceType,
@@ -2272,13 +2273,13 @@ function renderStageOneHome(data, progress) {
     frequent: selectedReviewItems.filter((item) => item.reason === "frequent").length,
     spaced: selectedReviewItems.filter((item) => item.reason !== "wrong" && item.reason !== "frequent").length
   };
-  const hasDueReviews = selectedReviewItems.length > 0;
   const dayNo = dailyTarget.dayNo;
   const nextDayNo = Math.min(dayNo + 1, planSummary.durationDays);
   const currentTarget = progress.currentDailyTarget || {};
   const currentTargetCompleted = Boolean(currentTarget.completedAt)
     && Number(currentTarget.dayNo) === Number(dayNo)
     && currentTarget.durationDays === planSummary.durationDays;
+  const hasDueReviews = !currentTargetCompleted && selectedReviewItems.length > 0;
   const reviewComplete = learningComplete && !hasDueReviews && currentTargetCompleted;
   const reviewReady = learningComplete && hasDueReviews;
   const canStartNextDay = learningComplete && reviewComplete && dayNo < planSummary.durationDays;
@@ -3174,11 +3175,20 @@ export async function handleUiAction(event, state, refresh) {
     if (state.quizSession.mode === "review-queue") {
       const currentIndex = state.quizSession.questionIds.indexOf(state.selectedQuestionId);
       const remainingQuestionIds = state.quizSession.questionIds.slice(currentIndex + 1);
+      const retryCounts = state.quizSession.reviewRetryCounts || {};
+      const currentQuestionId = state.selectedQuestionId;
+      const currentRetryCount = retryCounts[currentQuestionId] || 0;
+
+      if (!state.quizResult.isCorrect && currentRetryCount < 1) {
+        retryCounts[currentQuestionId] = currentRetryCount + 1;
+        remainingQuestionIds.push(currentQuestionId);
+      }
 
       if (remainingQuestionIds.length) {
         state.quizSession = {
           ...state.quizSession,
-          questionIds: remainingQuestionIds
+          questionIds: remainingQuestionIds,
+          reviewRetryCounts: retryCounts
         };
         state.selectedQuestionId = remainingQuestionIds[0];
         state.quizResult = null;
@@ -3193,8 +3203,18 @@ export async function handleUiAction(event, state, refresh) {
 
       resetQuizSession(state);
       state.quizResult = null;
-      maybeCompleteCurrentDailyTarget(await loadAllData(), getProgress());
-      navigate("wrong-note");
+      const data = await loadAllData();
+      const progress = getProgress();
+      const planSummary = buildStudyPlanSummary(data, progress);
+      const target = planSummary.dailyTarget;
+      const targetLessons = data.lessons.filter((lesson) => target.contentIds.includes(lesson.id));
+      const learningComplete = targetLessons.length > 0
+        && targetLessons.every((lesson) => isLessonFullyComplete(progress, lesson));
+
+      if (learningComplete && target.totalTodayCount) {
+        completeCurrentDailyTarget(target.dayNo, planSummary.durationDays);
+      }
+      navigate("home");
       return;
     }
 
