@@ -389,10 +389,9 @@ function advanceCompletedDailyTargetForStart(data, progress) {
   const target = planSummary.dailyTarget;
   const currentTarget = progress.currentDailyTarget || {};
   if (
-    target.totalTodayCount
-    && target.remainingTodayCount === 0
-    && currentTarget.completedAt
+    currentTarget.completedAt
     && Number(currentTarget.dayNo) === Number(target.dayNo)
+    && currentTarget.durationDays === planSummary.durationDays
   ) {
     return advanceCurrentDailyTarget(target.dayNo, planSummary.durationDays);
   }
@@ -403,11 +402,17 @@ function advanceCompletedDailyTargetForStart(data, progress) {
 async function continueDailyTargetAfterLessonQuiz(data, progress, state, lesson) {
   markLessonQuizCompleted(lesson.id);
   const latestProgress = maybeCompleteCurrentDailyTarget(data, getProgress());
-  const target = buildStudyPlanSummary(data, latestProgress).dailyTarget;
+  const planSummary = buildStudyPlanSummary(data, latestProgress);
+  const target = planSummary.dailyTarget;
   const dailyLessons = data.lessons.filter((entry) => target.contentIds.includes(entry.id));
   const nextDailyLesson = dailyLessons.find((entry) => !isLessonFullyComplete(latestProgress, entry));
 
+  // 오늘 학습할 레슨 퀴즈가 더 이상 없으면(즉, 오늘 학습 완료 시점),
+  // 방금 푼 학습 문제에서 발생한 오답을 포함하여 오늘의 복습 목록(targetReviewQueueIds)을 최종 확정
   if (!nextDailyLesson) {
+    saveCurrentDailyTarget({
+      targetReviewQueueIds: getCurrentTargetReviewQueueIds(latestProgress)
+    });
     navigate("home");
     return;
   }
@@ -3110,8 +3115,18 @@ export async function handleUiAction(event, state, refresh) {
 
   if (action === "start-next-daily-learning") {
     const data = await loadAllData();
-    const progress = maybeCompleteCurrentDailyTarget(data, getProgress());
-    await startDailyLearning(data, progress, state);
+    const currentProgress = getProgress();
+    const planSummary = buildStudyPlanSummary(data, currentProgress);
+    const currentTarget = currentProgress.currentDailyTarget || {};
+    // 현재 day가 완료됐으면(completedAt 있으면) 복습 미완료 여부와 무관하게 다음 날로 advance
+    const advancedProgress = (
+      currentTarget.completedAt
+      && Number(currentTarget.dayNo) === Number(planSummary.dailyTarget.dayNo)
+      && currentTarget.durationDays === planSummary.durationDays
+    )
+      ? advanceCurrentDailyTarget(currentTarget.dayNo, planSummary.durationDays)
+      : maybeCompleteCurrentDailyTarget(data, currentProgress);
+    await startDailyLearning(data, advancedProgress, state);
     return;
   }
 
@@ -3250,10 +3265,7 @@ export async function handleUiAction(event, state, refresh) {
       const planSummary = buildStudyPlanSummary(data, progress);
       const target = planSummary.dailyTarget;
       const targetLessons = data.lessons.filter((lesson) => target.contentIds.includes(lesson.id));
-      const learningComplete = targetLessons.length > 0
-        && targetLessons.every((lesson) => isLessonFullyComplete(progress, lesson));
-
-      if (learningComplete && target.totalTodayCount) {
+      if (target.totalTodayCount) {
         completeCurrentDailyTarget(target.dayNo, planSummary.durationDays);
       }
       navigate("home");
