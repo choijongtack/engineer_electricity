@@ -176,7 +176,10 @@ export function buildDailyStudyTarget(data, progress) {
   const completedDueReviewCount = currentTargetReviewQueueIds.length
     ? countCompletedTargetReviews(progress, currentTargetReviewQueueIds, currentTarget.startedAt)
     : 0;
-  const completedLessonCount = contentIds.filter((lessonId) => isLessonFullyComplete(progress, { id: lessonId, relatedQuestionIds: [] })).length;
+  const completedLessonCount = contentIds.filter((lessonId) => {
+    const lesson = data.lessons.find((entry) => entry.id === lessonId);
+    return lesson ? isLessonFullyComplete(progress, lesson) : false;
+  }).length;
   const completedQuestionCount = questionIds.filter((questionId) => completedQuestionIds.has(questionId)).length;
   const totalTodayCount = contentIds.length + questionIds.length + reviewTargetCount;
   const completedTodayCount = completedLessonCount + completedQuestionCount + completedDueReviewCount;
