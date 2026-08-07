@@ -303,16 +303,19 @@ function startLessonQuizSession(state, progress, lesson) {
 }
 
 function startWrongAnswerReviewSession(state, item) {
+  const questionIds = item.questionIds?.length ? item.questionIds : [item.questionId];
   state.quizSession = {
     mode: "wrong-note",
     subjectId: item.subjectId,
     lessonId: item.lessonId || null,
     sourceType: item.sourceType,
     sourceId: item.sourceId,
-    questionIds: [item.questionId]
+    questionIds,
+    totalQuestionIds: questionIds
   };
   state.selectedSubjectId = item.subjectId;
-  state.selectedQuestionId = item.questionId;
+  state.selectedLessonId = item.lessonId || null;
+  state.selectedQuestionId = questionIds[0] || null;
   state.quizResult = null;
 }
 
@@ -772,6 +775,7 @@ function stitchNavItems() {
     ["home", "대시보드"],
     ["concept", "개념 학습"],
     ["memorization", "암기 학습"],
+    ["wrong-note", "오답노트"],
     ["mock-exam", "모의고사"],
     ["progress", "학습 현황"],
     ["settings", "설정"]
@@ -1908,6 +1912,7 @@ function navItems() {
     ["home", "대시보드"],
     ["concept", "개념 학습"],
     ["memorization", "암기 학습"],
+    ["wrong-note", "오답노트"],
     ["mock-exam", "모의고사"],
     ["progress", "학습 현황"],
     ["settings", "설정"]
@@ -2448,7 +2453,7 @@ function renderStageOneHome(data, progress) {
   `, hasDueReviews, sidebarAction);
 }
 
-function renderStitchWrongNote(data, progress, state) {
+function renderStitchWrongNoteLegacy(data, progress, state) {
   const subjectScope = state.wrongNoteScope !== "mock-exam";
   const activeScope = subjectScope ? "subject" : "mock-exam";
   const selectedSubjectId = getSelectedSubjectId(data, progress, state.wrongNoteSubjectId || state.selectedSubjectId);
@@ -2659,6 +2664,160 @@ function renderStitchWrongNote(data, progress, state) {
         </div>
         <div class="stitch-list-stack">
           ${wrongHistory}
+        </div>
+      </section>
+    `
+  );
+}
+
+function getWrongNoteFilteredQuestions(data, progress, state) {
+  const storedQuestionIds = new Set(progress.wrongNoteQuestionIds || []);
+  const selectedSubjectId = state.wrongNoteSubjectId || "all";
+  const selectedLessonId = state.wrongNoteLessonId || "all";
+  const lessonQuestionIds = selectedLessonId === "all"
+    ? null
+    : new Set(getRelatedQuestionIds(data.lessons.find((lesson) => lesson.id === selectedLessonId)));
+
+  return data.questions.filter((question) => {
+    if (!storedQuestionIds.has(question.id)) {
+      return false;
+    }
+    if (selectedSubjectId !== "all" && question.subjectId !== selectedSubjectId) {
+      return false;
+    }
+    if (lessonQuestionIds && !lessonQuestionIds.has(question.id)) {
+      return false;
+    }
+    return true;
+  });
+}
+
+function renderStitchWrongNote(data, progress, state) {
+  const wrongNoteIds = progress.wrongNoteQuestionIds || [];
+  const selectedSubjectId = state.wrongNoteSubjectId || "all";
+  const selectedLessonId = state.wrongNoteLessonId || "all";
+  const subjectIdsWithWrongNotes = new Set(
+    data.questions
+      .filter((question) => wrongNoteIds.includes(question.id))
+      .map((question) => question.subjectId)
+  );
+  const subjectOptions = data.subjects.filter((subject) => subjectIdsWithWrongNotes.has(subject.id));
+  const lessonOptions = data.lessons.filter((lesson) => {
+    if (selectedSubjectId !== "all" && lesson.subjectId !== selectedSubjectId) {
+      return false;
+    }
+    return getRelatedQuestionIds(lesson).some((questionId) => wrongNoteIds.includes(questionId));
+  });
+  const filteredQuestions = getWrongNoteFilteredQuestions(data, progress, state);
+  const selectedSubjectName = selectedSubjectId === "all" ? "전체 과목" : findSubjectName(data.subjects, selectedSubjectId);
+  const selectedLesson = data.lessons.find((lesson) => lesson.id === selectedLessonId);
+  const filteredQuestionIds = filteredQuestions.map((question) => question.id);
+  const questionCards = filteredQuestions.length
+    ? filteredQuestions
+        .map((question) => {
+          const solvedEntry = progress.solvedQuestions?.[question.id];
+          const lesson = data.lessons.find((entry) => getRelatedQuestionIds(entry).includes(question.id));
+
+          return `
+            <article class="stitch-queue-card compact">
+              <div class="stitch-queue-copy">
+                <div class="stitch-inline-meta">
+                  <span>${findSubjectName(data.subjects, question.subjectId)}</span>
+                  <span>${lesson?.title || "Lesson 미지정"}</span>
+                  <span>${question.source?.examDate || "기출"} ${question.source?.questionNumber || ""}번</span>
+                </div>
+                <h3>${question.question}</h3>
+                <p>오답 ${solvedEntry?.wrongCount || 1}회 / 최근 풀이 ${solvedEntry?.lastSolvedAt ? formatDateTime(solvedEntry.lastSolvedAt) : "기록 없음"}</p>
+              </div>
+              <div class="stitch-stack-actions">
+                <button
+                  class="stitch-primary-button"
+                  data-action="review-wrong-answer"
+                  data-question-id="${question.id}"
+                  data-question-ids="${filteredQuestionIds.join(",")}"
+                  data-subject-id="${question.subjectId}"
+                  data-source-type="${SUBJECT_QUIZ_SOURCE}"
+                  data-source-id="${question.subjectId}"
+                  data-lesson-id="${lesson?.id || ""}"
+                >
+                  다시 풀기
+                </button>
+                <button class="stitch-secondary-button" data-action="toggle-bookmark" data-question-id="${question.id}">북마크</button>
+              </div>
+            </article>
+          `;
+        })
+        .join("")
+    : `<div class="stitch-empty-card"><strong>선택한 범위에 오답 문제가 없습니다.</strong><p>기출 문제를 틀리면 이곳에 문제 번호가 별도로 저장됩니다.</p></div>`;
+
+  return stitchLayout(
+    "오답노트",
+    "wrong-note",
+    `
+      <section class="stitch-page-header">
+        <div>
+          <div class="stitch-badge">Wrong Note</div>
+          <h3>오답노트</h3>
+          <p>틀린 기출문제 ID만 따로 저장하고, 선택한 과목과 Lesson 범위의 오답만 다시 풉니다.</p>
+        </div>
+        <button class="stitch-primary-button" data-action="review-wrong-answer" data-question-ids="${filteredQuestionIds.join(",")}" ${filteredQuestionIds.length ? "" : "disabled"}>
+          선택 범위 재학습
+        </button>
+      </section>
+
+      <section class="stitch-kpi-grid">
+        <article class="stitch-kpi-card">
+          <span>전체 오답노트</span>
+          <strong>${wrongNoteIds.length}</strong>
+          <p>저장된 기출 ID</p>
+        </article>
+        <article class="stitch-kpi-card">
+          <span>선택 범위</span>
+          <strong>${filteredQuestions.length}</strong>
+          <p>${selectedSubjectName}${selectedLesson ? ` / ${selectedLesson.title}` : ""}</p>
+        </article>
+        <article class="stitch-kpi-card">
+          <span>삭제 규칙</span>
+          <strong>정답</strong>
+          <p>오답노트에서 맞히면 목록에서 삭제</p>
+        </article>
+        <article class="stitch-kpi-card is-urgent">
+          <span>재오답</span>
+          <strong>유지</strong>
+          <p>다시 틀리면 오답노트에 남김</p>
+        </article>
+      </section>
+
+      <section class="stitch-filter-bar">
+        <label class="stitch-filter-shell">
+          <span>과목 선택</span>
+          <select data-action="filter-wrong-note">
+            <option value="all" ${selectedSubjectId === "all" ? "selected" : ""}>전체 과목</option>
+            ${subjectOptions
+              .map((subject) => `<option value="${subject.id}" ${subject.id === selectedSubjectId ? "selected" : ""}>${subject.name}</option>`)
+              .join("")}
+          </select>
+        </label>
+        <label class="stitch-filter-shell">
+          <span>Lesson 선택</span>
+          <select data-action="filter-wrong-note-lesson">
+            <option value="all" ${selectedLessonId === "all" ? "selected" : ""}>전체 Lesson</option>
+            ${lessonOptions
+              .map((lesson) => `<option value="${lesson.id}" ${lesson.id === selectedLessonId ? "selected" : ""}>${lesson.title}</option>`)
+              .join("")}
+          </select>
+        </label>
+      </section>
+
+      <section class="stitch-surface-card">
+        <div class="stitch-section-head">
+          <div>
+            <p class="stitch-card-label">Wrong Note Questions</p>
+            <h3>오답 기출 목록</h3>
+          </div>
+        </div>
+        <div class="stitch-list-stack">
+          ${questionCards}
         </div>
       </section>
     `
@@ -3208,6 +3367,9 @@ export async function handleUiAction(event, state, refresh) {
     if (state.quizSession?.mode === "review-queue") {
       metadata.reviewMode = "review-queue";
     }
+    if (state.quizSession?.mode === "wrong-note") {
+      metadata.reviewMode = "wrong-note";
+    }
 
     state.quizResult = await submitAnswer(actionButton.dataset.questionId, Number(choiceInput.value), metadata);
 
@@ -3313,29 +3475,23 @@ export async function handleUiAction(event, state, refresh) {
       return;
     }
 
-    if (state.quizSession.mode === "wrong-note" && state.quizResult.isCorrect) {
-      const data = await loadAllData();
-      const progress = getProgress();
-      const subjectId = state.quizSession.subjectId;
-      const sourceType = state.quizSession.sourceType;
-      resetQuizSession(state);
-      state.quizResult = null;
+    if (state.quizSession.mode === "wrong-note") {
+      const currentQuestionId = state.selectedQuestionId;
+      const remainingQuestionIds = state.quizSession.questionIds.filter((questionId) => questionId !== currentQuestionId);
 
-      if (sourceType === SUBJECT_QUIZ_SOURCE) {
-        if (!hasPendingSubjectWrongAnswers(progress, subjectId)) {
-          markSubjectWrongNoteCompleted(subjectId);
-          const latestProgress = getProgress();
-          advanceToNextSubjectOrMock(data, latestProgress, state, subjectId);
-          return;
-        }
-
-        state.wrongNoteScope = "subject";
-        state.wrongNoteSubjectId = subjectId;
-        navigate("wrong-note");
+      if (remainingQuestionIds.length) {
+        state.quizSession = {
+          ...state.quizSession,
+          questionIds: remainingQuestionIds
+        };
+        state.selectedQuestionId = remainingQuestionIds[0];
+        state.quizResult = null;
+        await refresh();
         return;
       }
 
-      state.wrongNoteScope = "mock-exam";
+      resetQuizSession(state);
+      state.quizResult = null;
       navigate("wrong-note");
       return;
     }
@@ -3359,6 +3515,14 @@ export async function handleUiAction(event, state, refresh) {
 
   if (action === "filter-wrong-note") {
     state.wrongNoteSubjectId = event.target.value;
+    state.wrongNoteLessonId = "all";
+    state.wrongNoteScope = "subject";
+    await refresh();
+    return;
+  }
+
+  if (action === "filter-wrong-note-lesson") {
+    state.wrongNoteLessonId = event.target.value;
     state.wrongNoteScope = "subject";
     await refresh();
     return;
@@ -3366,12 +3530,36 @@ export async function handleUiAction(event, state, refresh) {
 
   if (action === "review-wrong-answer") {
     clearReviewMode(state);
+    const data = await loadAllData();
+    const progress = getProgress();
+    const questionIds = (actionButton.dataset.questionIds || "")
+      .split(",")
+      .map((questionId) => questionId.trim())
+      .filter(Boolean);
+    const fallbackQuestionId = actionButton.dataset.questionId || questionIds[0];
+    const question = data.questions.find((entry) => entry.id === fallbackQuestionId);
+    if (!fallbackQuestionId || !question) {
+      window.alert("재학습할 오답 문제가 없습니다.");
+      return;
+    }
+    const activeQuestionIds = (questionIds.length ? questionIds : [fallbackQuestionId])
+      .filter((questionId) => (progress.wrongNoteQuestionIds || []).includes(questionId));
+    if (!activeQuestionIds.length) {
+      window.alert("재학습할 오답 문제가 없습니다.");
+      await refresh();
+      return;
+    }
+    const orderedQuestionIds = activeQuestionIds.includes(fallbackQuestionId)
+      ? [fallbackQuestionId, ...activeQuestionIds.filter((questionId) => questionId !== fallbackQuestionId)]
+      : activeQuestionIds;
+    const lesson = data.lessons.find((entry) => getRelatedQuestionIds(entry).includes(fallbackQuestionId));
     startWrongAnswerReviewSession(state, {
-      questionId: actionButton.dataset.questionId,
-      subjectId: actionButton.dataset.subjectId,
-      sourceType: actionButton.dataset.sourceType,
-      sourceId: actionButton.dataset.sourceId,
-      lessonId: actionButton.dataset.lessonId || null
+      questionId: fallbackQuestionId,
+      questionIds: orderedQuestionIds,
+      subjectId: actionButton.dataset.subjectId || question.subjectId,
+      sourceType: actionButton.dataset.sourceType || SUBJECT_QUIZ_SOURCE,
+      sourceId: actionButton.dataset.sourceId || question.subjectId,
+      lessonId: actionButton.dataset.lessonId || lesson?.id || null
     });
     navigate("quiz");
     return;

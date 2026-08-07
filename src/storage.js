@@ -1,10 +1,45 @@
 import { ensureReviewShape, scheduleReview } from "./reviewScheduler.js";
 import { queueProgressSync } from "./cloudSync.js";
 
+const PROGRESS_STORAGE_KEY = "jt-academy-fire-progress";
 let progressState = null;
 
 function nowIso() {
   return new Date().toISOString();
+}
+
+function readStoredProgress() {
+  if (typeof window === "undefined" || !window.localStorage) {
+    return null;
+  }
+
+  try {
+    const stored = window.localStorage.getItem(PROGRESS_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : null;
+  } catch (error) {
+    console.warn("Saved progress could not be loaded.", error);
+    return null;
+  }
+}
+
+function writeStoredProgress(progress) {
+  if (typeof window === "undefined" || !window.localStorage) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(progress));
+  } catch (error) {
+    console.warn("Progress could not be saved locally.", error);
+  }
+}
+
+function removeStoredProgress() {
+  if (typeof window === "undefined" || !window.localStorage) {
+    return;
+  }
+
+  window.localStorage.removeItem(PROGRESS_STORAGE_KEY);
 }
 
 function ensureProgressShape(progress) {
@@ -12,6 +47,7 @@ function ensureProgressShape(progress) {
   progress.memorizationStats ||= {};
   progress.solvedQuestions ||= {};
   progress.wrongAnswers ||= [];
+  progress.wrongNoteQuestionIds ||= [];
   progress.bookmarks ||= [];
   progress.mockExamHistory ||= [];
   progress.lessonProgress ||= {};
@@ -66,6 +102,9 @@ function ensureProgressShape(progress) {
     lessonId: item.lessonId || null,
     ...item
   }));
+  progress.wrongNoteQuestionIds = [...new Set(
+    progress.wrongNoteQuestionIds.filter((questionId) => typeof questionId === "string" && questionId.trim())
+  )];
 
   return progress;
 }
@@ -90,13 +129,14 @@ function createInitialProgress() {
     memorizationStats: {},
     solvedQuestions: {},
     wrongAnswers: [],
+    wrongNoteQuestionIds: [],
     bookmarks: [],
     mockExamHistory: []
   });
 }
 
 export function getProgress() {
-  if (!progressState) progressState = createInitialProgress();
+  if (!progressState) progressState = readStoredProgress() || createInitialProgress();
   return ensureProgressShape(progressState);
 }
 
@@ -104,17 +144,20 @@ export function saveProgress(progress) {
   ensureProgressShape(progress);
   progress.lastAccessAt = nowIso();
   progressState = progress;
+  writeStoredProgress(progress);
   queueProgressSync(progress);
   return progress;
 }
 
 export function setProgress(progress) {
   progressState = ensureProgressShape(progress);
+  writeStoredProgress(progressState);
   return progressState;
 }
 
 export function clearProgress() {
   progressState = null;
+  removeStoredProgress();
 }
 
 export function resetProgress() {
@@ -233,6 +276,16 @@ function isSameWrongAnswerTarget(item, metadata) {
   );
 }
 
+function addWrongNoteQuestion(progress, questionId) {
+  if (!progress.wrongNoteQuestionIds.includes(questionId)) {
+    progress.wrongNoteQuestionIds.push(questionId);
+  }
+}
+
+function removeWrongNoteQuestion(progress, questionId) {
+  progress.wrongNoteQuestionIds = progress.wrongNoteQuestionIds.filter((id) => id !== questionId);
+}
+
 export function saveQuestionResult(questionId, selectedChoice, isCorrect, metadata) {
   const progress = getProgress();
   const {
@@ -262,6 +315,7 @@ export function saveQuestionResult(questionId, selectedChoice, isCorrect, metada
   };
 
   if (!isCorrect) {
+    addWrongNoteQuestion(progress, questionId);
     addWrongAnswer(questionId, subjectId, progress, { sourceType, sourceId, lessonId });
   } else {
     const wrongEntry = progress.wrongAnswers.find((item) =>
@@ -269,6 +323,9 @@ export function saveQuestionResult(questionId, selectedChoice, isCorrect, metada
     );
     if (wrongEntry) {
       wrongEntry.reviewStatus = "cleared";
+    }
+    if (reviewMode === "wrong-note") {
+      removeWrongNoteQuestion(progress, questionId);
     }
   }
 
@@ -318,6 +375,16 @@ export function addWrongAnswer(questionId, subjectId, baseProgress, metadata = {
   }
 
   return progress;
+}
+
+export function getWrongNoteQuestionIds() {
+  return [...getProgress().wrongNoteQuestionIds];
+}
+
+export function removeQuestionFromWrongNote(questionId) {
+  const progress = getProgress();
+  removeWrongNoteQuestion(progress, questionId);
+  return saveProgress(progress);
 }
 
 export function toggleBookmark(questionId) {

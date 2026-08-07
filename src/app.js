@@ -15,6 +15,7 @@ const state = {
   quizSession: null,
   showQuizStatus: false,
   wrongNoteSubjectId: "all",
+  wrongNoteLessonId: "all",
   wrongNoteScope: "subject",
   reviewMode: false,
   quizResult: null,
