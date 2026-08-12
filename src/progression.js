@@ -42,7 +42,10 @@ export function isLessonFullyComplete(progress, lesson) {
 
 export function getPendingLessonQuestionIds(progress, lesson) {
   const relatedQuestionIds = [...new Set(getRelatedQuestionIds(lesson))];
-  const completedQuestionIds = new Set(progress.lessonProgress?.[lesson.id]?.completedQuestionIds || []);
+  const completedQuestionIds = new Set([
+    ...Object.keys(progress.solvedQuestions || {}),
+    ...(progress.lessonProgress?.[lesson.id]?.completedQuestionIds || [])
+  ]);
   const assignedToOtherLessons = new Set(
     Object.entries(progress.lessonProgress || {})
       .filter(([lessonId]) => lessonId !== lesson.id)
